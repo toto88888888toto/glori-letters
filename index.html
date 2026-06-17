@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glori Creativity – Letter Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+
+    header { background: #1a1a2e; color: #fff; padding: 14px 28px; display: flex; align-items: center; gap: 16px; }
+    header h1 { font-size: 1.2rem; font-weight: 600; }
+    header span { font-size: 0.8rem; color: #aaa; }
+
+    .tabs { background: #16213e; display: flex; padding: 0 28px; }
+    .tab-btn { padding: 11px 22px; color: #aaa; cursor: pointer; border: none; background: none; font-size: 0.9rem; border-bottom: 3px solid transparent; transition: all .2s; }
+    .tab-btn.active { color: #fff; border-bottom-color: #e94560; }
+    .tab-btn:hover:not(.active) { color: #ddd; }
+
+    .page { display: none; grid-template-columns: 360px 1fr; height: calc(100vh - 94px); }
+    .page.active { display: grid; }
+
+    .form-panel { background: #fff; border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 24px 20px; }
+    .form-panel h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .1em; color: #888; margin-bottom: 16px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #444; margin-bottom: 4px; }
+    .field input, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 0.85rem; color: #222; transition: border .15s; background: #fafafa; }
+    .field input:focus, .field textarea:focus { outline: none; border-color: #e94560; background: #fff; }
+    .field textarea { resize: vertical; min-height: 62px; }
+    .section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .1em; color: #e94560; font-weight: 700; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #f0e0e3; }
+    .btn-row { display: flex; gap: 8px; margin-top: 20px; }
+    .btn { flex: 1; padding: 10px; border: none; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .2s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #e94560; color: #fff; }
+    .btn-secondary { background: #1a1a2e; color: #fff; }
+    .btn-outline { background: #f0f0f0; color: #333; }
+
+    .preview-panel { overflow-y: auto; padding: 36px; background: #e8eaed; }
+    .letter { background: #fff; max-width: 760px; margin: 0 auto; padding: 56px 64px; box-shadow: 0 2px 20px rgba(0,0,0,.12); font-family: 'Times New Roman', Times, serif; font-size: 12.5pt; line-height: 1.65; color: #111; min-height: 1050px; }
+    .letter-logo { text-align: center; margin-bottom: 32px; }
+    .logo-text { font-family: 'Georgia', serif; font-size: 2.4rem; font-style: italic; letter-spacing: .04em; border: 2px solid #111; display: inline-block; padding: 6px 22px 4px; }
+    .letter-body p { margin-bottom: 14px; }
+    .inst-item { margin-bottom: 12px; }
+    .receipt-line { text-align: right; margin-bottom: 60px; font-style: italic; }
+    .sig-name { font-weight: bold; }
+
+    @media print {
+      body { background: #fff; }
+      header, .tabs, .form-panel { display: none !important; }
+      .page.active { display: block; height: auto; }
+      .preview-panel { padding: 0; background: #fff; overflow: visible; }
+      .letter { box-shadow: none; padding: 0.5in 0.75in; max-width: 100%; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📄 Glori Creativity — Letter Generator</h1>
+    <span>Fill in the form on the left → Preview updates live → Print</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('delivery', this)">📦 Delivery Letter</button>
+  <button class="tab-btn" onclick="switchTab('contract', this)">📃 Sales Contract</button>
+</div>
+
+<!-- DELIVERY LETTER -->
+<div class="page active" id="page-delivery">
+  <div class="form-panel">
+    <h2>Fill in Details</h2>
+
+    <div class="section-title">Recipient</div>
+    <div class="field"><label>Dear (Company Name)</label>
+      <input id="d-dear" value="Auto world (KOLAO Developing Sole) Co., Ltd" oninput="renderDelivery()" /></div>
+
+    <div class="section-title">Order Info</div>
+    <div class="field"><label>Quantity</label>
+      <input id="d-qty" value="2,000" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Product Name</label>
+      <input id="d-product" value="Umbrellas with Cover Bags" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Brand / Model</label>
+      <input id="d-brand" value="HYUNDAI" oninput="renderDelivery()" /></div>
+
+    <div class="section-title">Delivery Details</div>
+    <div class="field"><label>Dispatch Date</label>
+      <input id="d-dispatchdate" value="16 Jun 2026" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Delivery Window</label>
+      <input id="d-deliveryday" value="Within 25–30 days from dispatch date" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Time Window</label>
+      <input id="d-time" value="01:00 PM to 06:00 PM" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Shipping Address</label>
+      <textarea id="d-address" oninput="renderDelivery()">Kolao A/S Service Center, Auto CityT2 Road, Nakham Village, Sikhottabong District, Vientiane Capital, Lao PDR</textarea></div>
+
+    <div class="section-title">Contact</div>
+    <div class="field"><label>Phone</label>
+      <input id="d-phone" value="+856 20 95577556" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Email</label>
+      <input id="d-email" value="glori.ct27@gmail.com" oninput="renderDelivery()" /></div>
+
+    <div class="section-title">Sender / Signature</div>
+    <div class="field"><label>Full Name & Title</label>
+      <input id="d-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderDelivery()" /></div>
+    <div class="field"><label>Position</label>
+      <input id="d-position" value="CEO" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Company</label>
+      <input id="d-company" value="Glori Creativity Sole.,Ltd" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Sender Phone</label>
+      <input id="d-sphone" value="+856 20 95577556" oninput="renderDelivery()" /></div>
+    <div class="field"><label>Sender Email</label>
+      <input id="d-semail" value="customer_sv@glori-cre.org" oninput="renderDelivery()" /></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-secondary" onclick="copyLetter('delivery-preview')">📋 Copy</button>
+      <button class="btn btn-outline" onclick="resetDelivery()">↺ Reset</button>
+    </div>
+  </div>
+  <div class="preview-panel">
+    <div class="letter" id="delivery-preview"></div>
+  </div>
+</div>
+
+<!-- SALES CONTRACT -->
+<div class="page" id="page-contract">
+  <div class="form-panel">
+    <h2>Fill in Details</h2>
+
+    <div class="section-title">Parties</div>
+    <div class="field"><label>Seller (Your Company)</label>
+      <input id="c-seller" value="Glori Creativity Sole.,Ltd" oninput="renderContract()" /></div>
+    <div class="field"><label>Buyer (Client Company)</label>
+      <input id="c-buyer" placeholder="e.g. Auto world (KOLAO) Co., Ltd" oninput="renderContract()" /></div>
+    <div class="field"><label>Contract Date</label>
+      <input id="c-date" placeholder="e.g. 16 Jun 2026" oninput="renderContract()" /></div>
+    <div class="field"><label>Contract Number</label>
+      <input id="c-num" placeholder="e.g. GC-2026-001" oninput="renderContract()" /></div>
+
+    <div class="section-title">Product / Service</div>
+    <div class="field"><label>Quantity</label>
+      <input id="c-qty" placeholder="e.g. 2,000 sets" oninput="renderContract()" /></div>
+    <div class="field"><label>Product Description</label>
+      <textarea id="c-product" placeholder="e.g. Umbrellas with Cover Bags (HYUNDAI)" oninput="renderContract()"></textarea></div>
+    <div class="field"><label>Unit Price</label>
+      <input id="c-uprice" placeholder="e.g. USD 5.00 / set" oninput="renderContract()" /></div>
+    <div class="field"><label>Total Amount</label>
+      <input id="c-total" placeholder="e.g. USD 10,000.00" oninput="renderContract()" /></div>
+    <div class="field"><label>Payment Terms</label>
+      <textarea id="c-payment" placeholder="e.g. 50% deposit on signing, 50% before delivery" oninput="renderContract()"></textarea></div>
+
+    <div class="section-title">Delivery</div>
+    <div class="field"><label>Delivery Date</label>
+      <input id="c-deldate" placeholder="e.g. Within 30 days of payment" oninput="renderContract()" /></div>
+    <div class="field"><label>Delivery Address</label>
+      <textarea id="c-address" placeholder="Full delivery address" oninput="renderContract()"></textarea></div>
+
+    <div class="section-title">Sender</div>
+    <div class="field"><label>Authorized Signatory</label>
+      <input id="c-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderContract()" /></div>
+    <div class="field"><label>Position</label>
+      <input id="c-position" value="CEO" oninput="renderContract()" /></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-secondary" onclick="copyLetter('contract-preview')">📋 Copy</button>
+      <button class="btn btn-outline" onclick="resetContract()">↺ Reset</button>
+    </div>
+  </div>
+  <div class="preview-panel">
+    <div class="letter" id="contract-preview"></div>
+  </div>
+</div>
+
+<script>
+function g(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+function copyLetter(id) {
+  navigator.clipboard.writeText(document.getElementById(id).innerText)
+    .then(() => alert('Copied to clipboard!'));
+}
+
+// ── Delivery Letter ──────────────────────────────────────────────────────────
+function renderDelivery() {
+  const dear=g('d-dear'), qty=g('d-qty'), product=g('d-product'), brand=g('d-brand');
+  const dispDate=g('d-dispatchdate'), delDay=g('d-deliveryday'), time=g('d-time');
+  const address=g('d-address'), phone=g('d-phone'), email=g('d-email');
+  const sender=g('d-sender'), position=g('d-position'), company=g('d-company');
+  const sphone=g('d-sphone'), semail=g('d-semail');
+  const subject = qty+' sets of '+product+' ('+brand+')';
+  const subjectS = qty+' '+product+' ('+brand+')';
+
+  document.getElementById('delivery-preview').innerHTML =
+    '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
+    '<p style="margin-bottom:6px">Dear: <strong>'+dear+'</strong></p>'+
+    '<p style="margin-bottom:18px">Subject: <strong>'+subject+'</strong></p>'+
+    '<div class="letter-body">'+
+    '<p>We are pleased to inform you that your order for <strong>'+subject+'</strong> has been successfully dispatched and is scheduled for delivery on <strong>'+dispDate+'.</strong> This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.</p>'+
+    '<p><strong>Delivery Details:</strong><br>'+
+    'Delivery Date: '+delDay+'<br>'+
+    'Time Window: '+time+'<br>'+
+    'Shipping Address: '+address+'</p>'+
+    '<p>Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at '+phone+' or '+email+' as soon as possible to make arrangements.</p>'+
+    '<p><strong>Instructions for Receiving the Delivery:</strong></p>'+
+    '<p class="inst-item"><strong>Inspection:</strong> Upon receiving the <strong>'+subject+'</strong>, we kindly ask you to inspect the items for any visible damage or discrepancies. Should you notice any issues, please notify the delivery team immediately or contact our customer service at '+phone+'.</p>'+
+    '<p class="inst-item"><strong>Customer Signature:</strong> In order to complete the delivery process, we will require a signature from you or an authorized representative upon receipt of the goods. If you are not available, we kindly request that you make arrangements for someone to sign on your behalf.</p>'+
+    '<p class="inst-item"><strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. Once signed, the delivery will be officially complete. A copy of this receipt will be provided to you for your records.</p>'+
+    '<p class="inst-item"><strong>Post-Delivery Support:</strong> Should you have any questions regarding your <strong>'+subjectS+'</strong>, or if you need assistance with assembly or care instructions, please don\'t hesitate to reach out to our customer support team. We are committed to ensuring your satisfaction and will be happy to assist with any inquiries you may have.</p>'+
+    '<p>Thank you for choosing <strong>'+company+'</strong> for your purchase. We value your business and look forward to serving you again in the future.</p>'+
+    '</div>'+
+    '<div style="margin-top:48px">'+
+    '<div class="receipt-line">Delivery Receipt (for signature)</div>'+
+    '<p>Sincerely,</p><br>'+
+    '<p class="sig-name">'+sender+'</p>'+
+    '<p>'+position+'</p><p>'+company+'</p><p>'+sphone+'</p><p>'+semail+'</p>'+
+    '</div>';
+}
+
+function resetDelivery() {
+  var d = {'d-dear':'Auto world (KOLAO Developing Sole) Co., Ltd','d-qty':'2,000','d-product':'Umbrellas with Cover Bags','d-brand':'HYUNDAI','d-dispatchdate':'16 Jun 2026','d-deliveryday':'Within 25–30 days from dispatch date','d-time':'01:00 PM to 06:00 PM','d-address':'Kolao A/S Service Center, Auto CityT2 Road, Nakham Village, Sikhottabong District, Vientiane Capital, Lao PDR','d-phone':'+856 20 95577556','d-email':'glori.ct27@gmail.com','d-sender':'TOTO OUTAMAVONGSA Mr.','d-position':'CEO','d-company':'Glori Creativity Sole.,Ltd','d-sphone':'+856 20 95577556','d-semail':'customer_sv@glori-cre.org'};
+  Object.entries(d).forEach(([id,val])=>{ document.getElementById(id).value=val; });
+  renderDelivery();
+}
+
+// ── Sales Contract ───────────────────────────────────────────────────────────
+function renderContract() {
+  var seller=g('c-seller'), buyer=g('c-buyer')||'_______________', date=g('c-date')||'_______________';
+  var num=g('c-num')||'_______________', qty=g('c-qty')||'—', product=g('c-product')||'—';
+  var uprice=g('c-uprice')||'—', total=g('c-total')||'—', payment=g('c-payment')||'_______________';
+  var deldate=g('c-deldate')||'_______________', address=g('c-address')||'_______________';
+  var sender=g('c-sender'), position=g('c-position');
+
+  document.getElementById('contract-preview').innerHTML =
+    '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
+    '<p style="text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:20px;text-decoration:underline;">SALES CONTRACT</p>'+
+    '<table style="width:100%;margin-bottom:18px;font-size:0.95em;"><tr>'+
+    '<td><strong>Contract No.:</strong> '+num+'</td>'+
+    '<td style="text-align:right"><strong>Date:</strong> '+date+'</td></tr></table>'+
+    '<p style="margin-bottom:8px"><strong>SELLER:</strong> '+seller+'</p>'+
+    '<p style="margin-bottom:18px"><strong>BUYER:</strong> '+buyer+'</p>'+
+    '<p style="margin-bottom:14px">This Sales Contract ("Contract") is entered into as of <strong>'+date+'</strong> between <strong>'+seller+'</strong> ("Seller") and <strong>'+buyer+'</strong> ("Buyer") for the following goods:</p>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">'+
+    '<thead><tr style="background:#f5f5f5;">'+
+    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:left;">Description</th>'+
+    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:center;">Qty</th>'+
+    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:right;">Unit Price</th>'+
+    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:right;">Total</th></tr></thead>'+
+    '<tbody><tr>'+
+    '<td style="border:1px solid #ccc;padding:7px 10px;">'+product+'</td>'+
+    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:center;">'+qty+'</td>'+
+    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:right;">'+uprice+'</td>'+
+    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:right;">'+total+'</td>'+
+    '</tr></tbody></table>'+
+    '<p style="margin-bottom:8px"><strong>Payment Terms:</strong> '+payment+'</p>'+
+    '<p style="margin-bottom:4px"><strong>Delivery Date:</strong> '+deldate+'</p>'+
+    '<p style="margin-bottom:18px"><strong>Delivery Address:</strong> '+address+'</p>'+
+    '<p style="margin-bottom:32px">Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.</p>'+
+    '<table style="width:100%;"><tr>'+
+    '<td style="width:48%;vertical-align:top">'+
+    '<p><strong>SELLER</strong></p><br><br>'+
+    '<p style="border-top:1px solid #333;padding-top:6px;font-weight:bold;">'+sender+'</p>'+
+    '<p>'+position+'</p><p>'+seller+'</p></td>'+
+    '<td style="width:4%"></td>'+
+    '<td style="width:48%;vertical-align:top">'+
+    '<p><strong>BUYER</strong></p><br><br>'+
+    '<p style="border-top:1px solid #333;padding-top:6px;">Authorized Representative</p>'+
+    '<p>'+buyer+'</p></td></tr></table>';
+}
+
+function resetContract() {
+  ['c-buyer','c-date','c-num','c-qty','c-product','c-uprice','c-total','c-payment','c-deldate','c-address'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('c-seller').value='Glori Creativity Sole.,Ltd';
+  document.getElementById('c-sender').value='TOTO OUTAMAVONGSA Mr.';
+  document.getElementById('c-position').value='CEO';
+  renderContract();
+}
+
+renderDelivery();
+renderContract();
+</script>
+</body>
+</html>
