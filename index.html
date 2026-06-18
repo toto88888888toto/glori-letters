@@ -3,53 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Glori Creativity – Letter Generator</title>
+  <title>Glori Document</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Noto Sans Lao','Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+    header{background:#1a1a2e;color:#fff;padding:14px 28px;display:flex;align-items:center;gap:16px}
+    header h1{font-size:1.2rem;font-weight:600;font-family:'Segoe UI',sans-serif}
+    header span{font-size:0.8rem;color:#aaa}
+    .tabs{background:#16213e;display:flex;padding:0 28px;overflow-x:auto}
+    .tab-btn{padding:11px 22px;color:#aaa;cursor:pointer;border:none;background:none;font-size:0.9rem;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;font-family:'Segoe UI',sans-serif}
+    .tab-btn.active{color:#fff;border-bottom-color:#e94560}
+    .tab-btn:hover:not(.active){color:#ddd}
 
-    header { background: #1a1a2e; color: #fff; padding: 14px 28px; display: flex; align-items: center; gap: 16px; }
-    header h1 { font-size: 1.2rem; font-weight: 600; }
-    header span { font-size: 0.8rem; color: #aaa; }
+    /* Letter pages */
+    .letter-page{display:none;grid-template-columns:360px 1fr;height:calc(100vh - 94px)}
+    .letter-page.active{display:grid}
+    .form-panel{background:#fff;border-right:1px solid #e0e0e0;overflow-y:auto;padding:24px 20px}
+    .form-panel h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px;font-family:'Segoe UI',sans-serif}
+    .field-l{margin-bottom:14px}
+    .field-l label{display:block;font-size:.78rem;font-weight:600;color:#444;margin-bottom:4px;font-family:'Segoe UI',sans-serif}
+    .field-l input,.field-l textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;color:#222;transition:border .15s;background:#fafafa;font-family:'Segoe UI',sans-serif}
+    .field-l input:focus,.field-l textarea:focus{outline:none;border-color:#e94560;background:#fff}
+    .field-l textarea{resize:vertical;min-height:62px}
+    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#e94560;font-weight:700;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #f0e0e3;font-family:'Segoe UI',sans-serif}
+    .btn-row{display:flex;gap:8px;margin-top:20px}
+    .btn-l{flex:1;padding:10px;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s;font-family:'Segoe UI',sans-serif}
+    .btn-l:hover{opacity:.85}
+    .btn-primary-l{background:#e94560;color:#fff}
+    .btn-secondary-l{background:#1a1a2e;color:#fff}
+    .btn-outline-l{background:#f0f0f0;color:#333}
+    .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
+    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Times New Roman',Times,serif;font-size:12.5pt;line-height:1.65;color:#111;min-height:1050px}
+    .letter-logo{text-align:center;margin-bottom:32px}
+    .logo-text{font-family:'Georgia',serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
+    .letter-body p{margin-bottom:14px}
+    .receipt-line{text-align:right;margin-bottom:60px;font-style:italic}
+    .sig-name{font-weight:bold}
 
-    .tabs { background: #16213e; display: flex; padding: 0 28px; }
-    .tab-btn { padding: 11px 22px; color: #aaa; cursor: pointer; border: none; background: none; font-size: 0.9rem; border-bottom: 3px solid transparent; transition: all .2s; }
-    .tab-btn.active { color: #fff; border-bottom-color: #e94560; }
-    .tab-btn:hover:not(.active) { color: #ddd; }
+    /* Q&I page */
+    .qi-page{display:none;overflow-y:auto;height:calc(100vh - 94px);background:#f3f5fb}
+    .qi-page.active{display:block}
+    .wrap{max-width:980px;margin:26px auto;padding:18px}
+    .card{background:#fff;border:1px solid rgba(17,24,39,.10);border-radius:26px;padding:26px;margin-bottom:16px;box-shadow:0 22px 44px rgba(2,8,23,.10);position:relative}
+    .card h2{margin:0 0 18px;font-size:24px;font-weight:800;color:rgba(17,24,39,.75)}
+    .qi-page input:not(.adv-inner),.qi-page select,.qi-page textarea{width:100%;padding:12px 14px;border-radius:16px;border:1px solid rgba(17,24,39,.12);background:#fbfbfd;color:rgba(17,24,39,.88);outline:none;transition:box-shadow .15s,border-color .15s;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .qi-page input:not(.adv-inner):focus,.qi-page select:focus,.qi-page textarea:focus{border-color:rgba(122,166,255,.7);box-shadow:0 0 0 4px rgba(122,166,255,.22)}
+    .qi-page input:not(.adv-inner){height:48px}
+    .qi-page input[type=date]{padding-top:10px;padding-bottom:10px}
+    .qi-page textarea{min-height:100px;resize:vertical;height:auto}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field>label{font-size:13px;font-weight:800;color:rgba(17,24,39,.60);padding-left:4px}
+    .grid{display:grid;gap:14px}
+    .grid+.grid{margin-top:14px}
+    .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .btn,.btn2{cursor:pointer;border-radius:999px;padding:12px 18px;font-weight:800;border:1px solid rgba(17,24,39,.14);background:#fff;color:rgba(17,24,39,.85);font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .btn{background:linear-gradient(90deg,#b7c8ff,#7aa6ff);border-color:rgba(122,166,255,.45)}
+    .btn:hover,.btn2:hover{box-shadow:0 10px 22px rgba(2,8,23,.12)}
+    .btn2.small{padding:10px 14px;font-size:12px;font-weight:900}
+    #addBtn{position:absolute;top:22px;right:22px;padding:12px 20px;background:linear-gradient(90deg,#b7c8ff,#7aa6ff);border-radius:999px;border:1px solid rgba(122,166,255,.45);font-weight:900;color:#111827;box-shadow:0 12px 26px rgba(2,8,23,.15);cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .card:has(#addBtn) h2{padding-right:180px}
+    #itemsList{margin-top:10px}
+    .item-card{border-radius:18px;background:#fff;border:1px solid rgba(17,24,39,.10);box-shadow:0 16px 34px rgba(2,8,23,.08);padding:22px;margin-bottom:16px}
+    .item-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+    .item-no{width:42px;height:42px;border-radius:50%;background:#7aa6ff;display:flex;align-items:center;justify-content:center;font-weight:900;color:#111827;flex-shrink:0}
+    .item-actions{display:flex;gap:10px;align-items:center}
+    .item-head .btn2{background:#f4f6fb;border:1px solid rgba(17,24,39,.14)}
+    .item-body{display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}
+    .item-photo{display:flex;flex-direction:column;gap:12px}
+    .photo-box{height:160px;border-radius:16px;border:2px dashed rgba(17,24,39,.18);display:flex;align-items:center;justify-content:center;color:rgba(17,24,39,.45);font-weight:700;background:rgba(255,255,255,.55);overflow:hidden}
+    .photo-box.has-img{border-style:solid}
+    .photo-box img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
+    .photo-btn{cursor:pointer;height:46px;border-radius:14px;border:1px solid rgba(17,24,39,.16);background:#fff;font-weight:900;color:rgba(17,24,39,.85);width:100%;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .photo-btn:hover{box-shadow:0 10px 22px rgba(2,8,23,.12)}
+    .item-right{display:flex;flex-direction:column;gap:12px}
+    .item-detail{min-height:105px}
+    .item-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .summary-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:18px;align-items:stretch}
+    .summary-block{min-height:150px;display:flex;flex-direction:column;justify-content:center}
+    .summary-block.field{background:#fff;border:1px solid rgba(17,24,39,.10);border-radius:22px;padding:18px;box-shadow:0 14px 28px rgba(2,8,23,.06)}
+    .amt-display{background:rgba(122,166,255,.12);border-radius:22px;padding:18px;border:1px solid rgba(122,166,255,.30);text-align:right;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .amt-display .balance{font-weight:900;font-size:20px;margin-top:4px}
+    .advance-card{background:#fff;border:1px solid rgba(17,24,39,.10);border-radius:22px;padding:18px;box-shadow:0 14px 28px rgba(2,8,23,.06);display:flex;flex-direction:column;gap:12px;justify-content:center}
+    .advance-title{font-weight:900;letter-spacing:.6px;color:rgba(17,24,39,.72);text-align:center}
+    .advance-controls{display:flex;gap:12px;align-items:center;justify-content:center}
+    .advance-input{flex:1;height:52px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fbfbfd;border:1px solid rgba(17,24,39,.12);border-radius:999px;padding:0 16px;min-width:0}
+    .adv-inner{width:90px!important;text-align:center;font-weight:900;font-size:18px;border:none!important;background:transparent!important;outline:none!important;box-shadow:none!important;height:40px!important;padding:0!important;border-radius:0!important}
+    .advance-input span{font-weight:900;color:rgba(17,24,39,.65)}
+    .vat-pill{height:52px;padding:0 18px;border-radius:999px;font-weight:900;white-space:nowrap;background:rgba(122,166,255,.14);border:1px solid rgba(122,166,255,.32);cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .advance-hint{text-align:center;font-size:12px;color:rgba(17,24,39,.55)}
+    .saved-row{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px;border-radius:18px;border:1px solid rgba(17,24,39,.12);margin-bottom:10px}
+    .saved-row .row-title{font-weight:900}
+    .saved-row .row-meta{font-size:12px;color:rgba(17,24,39,.55)}
+    .smallbtn{border-radius:999px;padding:10px 14px;border:1px solid rgba(17,24,39,.14);background:#fff;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .muted{color:rgba(17,24,39,.55);font-size:12px}
 
-    .page { display: none; grid-template-columns: 360px 1fr; height: calc(100vh - 94px); }
-    .page.active { display: grid; }
-
-    .form-panel { background: #fff; border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 24px 20px; }
-    .form-panel h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .1em; color: #888; margin-bottom: 16px; }
-    .field { margin-bottom: 14px; }
-    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: #444; margin-bottom: 4px; }
-    .field input, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 0.85rem; color: #222; transition: border .15s; background: #fafafa; }
-    .field input:focus, .field textarea:focus { outline: none; border-color: #e94560; background: #fff; }
-    .field textarea { resize: vertical; min-height: 62px; }
-    .section-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .1em; color: #e94560; font-weight: 700; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #f0e0e3; }
-    .btn-row { display: flex; gap: 8px; margin-top: 20px; }
-    .btn { flex: 1; padding: 10px; border: none; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: opacity .2s; }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: #e94560; color: #fff; }
-    .btn-secondary { background: #1a1a2e; color: #fff; }
-    .btn-outline { background: #f0f0f0; color: #333; }
-
-    .preview-panel { overflow-y: auto; padding: 36px; background: #e8eaed; }
-    .letter { background: #fff; max-width: 760px; margin: 0 auto; padding: 56px 64px; box-shadow: 0 2px 20px rgba(0,0,0,.12); font-family: 'Times New Roman', Times, serif; font-size: 12.5pt; line-height: 1.65; color: #111; min-height: 1050px; }
-    .letter-logo { text-align: center; margin-bottom: 32px; }
-    .logo-text { font-family: 'Georgia', serif; font-size: 2.4rem; font-style: italic; letter-spacing: .04em; border: 2px solid #111; display: inline-block; padding: 6px 22px 4px; }
-    .letter-body p { margin-bottom: 14px; }
-    .inst-item { margin-bottom: 12px; }
-    .receipt-line { text-align: right; margin-bottom: 60px; font-style: italic; }
-    .sig-name { font-weight: bold; }
-
-    @media print {
-      body { background: #fff; }
-      header, .tabs, .form-panel { display: none !important; }
-      .page.active { display: block; height: auto; }
-      .preview-panel { padding: 0; background: #fff; overflow: visible; }
-      .letter { box-shadow: none; padding: 0.5in 0.75in; max-width: 100%; margin: 0; }
+    @media(max-width:850px){
+      .g2,.g3{grid-template-columns:1fr}
+      .summary-grid{grid-template-columns:1fr}
+      .item-body{grid-template-columns:1fr}
+      .letter-page.active{display:block;height:auto}
+      .qi-page{height:auto}
+    }
+    @media print{
+      body{background:#fff}
+      header,.tabs,.form-panel,.qi-page{display:none!important}
+      .letter-page{display:block!important;height:auto}
+      .preview-panel{padding:0;background:#fff;overflow:visible}
+      .letter{box-shadow:none;padding:.5in .75in;max-width:100%;margin:0}
     }
   </style>
 </head>
@@ -57,234 +123,495 @@
 
 <header>
   <div>
-    <h1>📄 Glori Creativity — Letter Generator</h1>
-    <span>Fill in the form on the left → Preview updates live → Print</span>
+    <h1>&#128196; Glori Document</h1>
+    <span>Quotation &bull; Invoice &bull; Delivery &bull; Contract</span>
   </div>
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('delivery', this)">📦 Delivery Letter</button>
-  <button class="tab-btn" onclick="switchTab('contract', this)">📃 Sales Contract</button>
+  <button class="tab-btn active" onclick="switchTab('quotation',this)">&#128203; Quotation</button>
+  <button class="tab-btn" onclick="switchTab('invoice',this)">&#129534; Invoice</button>
+  <button class="tab-btn" onclick="switchTab('delivery',this)">&#128230; Delivery Letter</button>
+  <button class="tab-btn" onclick="switchTab('contract',this)">&#128195; Sales Contract</button>
+</div>
+
+<!-- QUOTATION / INVOICE PAGE -->
+<div class="qi-page active" id="page-qinv">
+  <div class="wrap">
+    <div class="card">
+      <h2>Document Details</h2>
+      <div class="grid g3">
+        <div class="field"><label>Document Type</label>
+          <select id="docType"><option value="Quotation">Quotation</option><option value="Invoice">Invoice</option></select></div>
+        <div class="field"><label>Document No</label><input id="docNo"></div>
+        <div class="field"><label>Date</label><input id="docDate" type="date"></div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="field"><label>Project</label><input id="project"></div>
+        <div class="field"><label>Currency</label>
+          <select id="currency"><option value="LAK">LAK</option><option value="USD">USD</option><option value="THB">THB</option></select></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Customer</h2>
+      <div class="grid g2">
+        <div class="field"><label>&#3714;&#3765;&#3756;&#3749;&#3749;&#3713;&#3785;&#3736;&#3714;&#3762; / Customer</label><input id="customerName"></div>
+        <div class="field"><label>Attention</label><input id="attentionTo"></div>
+      </div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="field"><label>&#3733;&#3765;&#3738;&#3762;&#3718;&#3718; / Address</label><textarea id="address"></textarea></div>
+        <div class="field"><label>&#3776;&#3738;&#3765;&#3740;&#3762;&#3737; / Contact</label><textarea id="contact"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bank Details</h2>
+      <div class="grid g3">
+        <div class="field"><label>Bank Name</label><input id="bankName" placeholder="e.g. BCEL / ACLEDA / etc."></div>
+        <div class="field"><label>Account Name</label><input id="accountName" placeholder="e.g. Glori Creativity Sole Co.,Ltd"></div>
+        <div class="field"><label>Account Number</label><input id="accountNumber" placeholder="e.g. 010-xxx-xxxxxxx"></div>
+      </div>
+      <div class="muted" style="margin-top:10px">This will appear in PDF bottom-left (above footer).</div>
+    </div>
+
+    <div class="card">
+      <h2>Items</h2>
+      <button class="btn2" type="button" id="addBtn">+ Add Item</button>
+      <div id="itemsList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Summary</h2>
+      <div class="summary-grid">
+        <div class="field summary-block"><label>Discount</label><input id="discount" type="number" value="0" min="0"></div>
+        <div class="summary-block advance-card">
+          <div class="advance-title">ADVANCE PAYMENT</div>
+          <div class="advance-controls">
+            <div class="advance-input">
+              <input class="adv-inner" id="advancePercent" type="number" value="0" min="0" max="100" step="0.01">
+              <span>%</span>
+            </div>
+            <button id="vatBtn" class="vat-pill" type="button">VAT: OFF</button>
+          </div>
+          <div class="advance-hint">Advance is % of Total</div>
+        </div>
+        <div class="amt-display summary-block">
+          <div id="subtotalDisplay">Subtotal: 0</div>
+          <div id="totalDisplay">Total: 0</div>
+          <div id="advanceDisplay">Advance: 0</div>
+          <div id="balanceDisplay" class="balance">Balance Due: 0</div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:10px">VAT uses 10% only when ON (based on Subtotal - Discount)</div>
+    </div>
+
+    <div class="card" style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn2" id="viewBtn">View Saved</button>
+      <button class="btn2" id="exportBtn">Export JSON</button>
+      <button class="btn" id="saveBtn">Save &amp; PDF</button>
+    </div>
+
+    <div class="card" id="savedCard" style="display:none">
+      <h2>Saved Documents</h2>
+      <div class="muted" style="margin-bottom:10px">Saved in this browser (LocalStorage)</div>
+      <div id="savedList"></div>
+      <div style="margin-top:12px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn2" id="closeSavedBtn">Close</button>
+        <button class="btn2" id="clearAllBtn">Clear All</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- DELIVERY LETTER -->
-<div class="page active" id="page-delivery">
+<div class="letter-page" id="page-delivery">
   <div class="form-panel">
     <h2>Fill in Details</h2>
-
     <div class="section-title">Recipient</div>
-    <div class="field"><label>Dear (Company Name)</label>
-      <input id="d-dear" value="Auto world (KOLAO Developing Sole) Co., Ltd" oninput="renderDelivery()" /></div>
-
+    <div class="field-l"><label>Dear (Company Name)</label>
+      <input id="d-dear" value="Auto world (KOLAO Developing Sole) Co., Ltd" oninput="renderDelivery()"/></div>
     <div class="section-title">Order Info</div>
-    <div class="field"><label>Quantity</label>
-      <input id="d-qty" value="2,000" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Product Name</label>
-      <input id="d-product" value="Umbrellas with Cover Bags" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Brand / Model</label>
-      <input id="d-brand" value="HYUNDAI" oninput="renderDelivery()" /></div>
-
+    <div class="field-l"><label>Quantity</label><input id="d-qty" value="2,000" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Product Name</label><input id="d-product" value="Umbrellas with Cover Bags" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Brand / Model</label><input id="d-brand" value="HYUNDAI" oninput="renderDelivery()"/></div>
     <div class="section-title">Delivery Details</div>
-    <div class="field"><label>Dispatch Date</label>
-      <input id="d-dispatchdate" value="16 Jun 2026" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Delivery Window</label>
-      <input id="d-deliveryday" value="Within 25–30 days from dispatch date" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Time Window</label>
-      <input id="d-time" value="01:00 PM to 06:00 PM" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Shipping Address</label>
+    <div class="field-l"><label>Dispatch Date</label><input id="d-dispatchdate" value="16 Jun 2026" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Delivery Window</label><input id="d-deliveryday" value="Within 25-30 days from dispatch date" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Time Window</label><input id="d-time" value="01:00 PM to 06:00 PM" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Shipping Address</label>
       <textarea id="d-address" oninput="renderDelivery()">Kolao A/S Service Center, Auto CityT2 Road, Nakham Village, Sikhottabong District, Vientiane Capital, Lao PDR</textarea></div>
-
     <div class="section-title">Contact</div>
-    <div class="field"><label>Phone</label>
-      <input id="d-phone" value="+856 20 95577556" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Email</label>
-      <input id="d-email" value="glori.ct27@gmail.com" oninput="renderDelivery()" /></div>
-
+    <div class="field-l"><label>Phone</label><input id="d-phone" value="+856 20 95577556" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Email</label><input id="d-email" value="glori.ct27@gmail.com" oninput="renderDelivery()"/></div>
     <div class="section-title">Sender / Signature</div>
-    <div class="field"><label>Full Name & Title</label>
-      <input id="d-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderDelivery()" /></div>
-    <div class="field"><label>Position</label>
-      <input id="d-position" value="CEO" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Company</label>
-      <input id="d-company" value="Glori Creativity Sole.,Ltd" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Sender Phone</label>
-      <input id="d-sphone" value="+856 20 95577556" oninput="renderDelivery()" /></div>
-    <div class="field"><label>Sender Email</label>
-      <input id="d-semail" value="customer_sv@glori-cre.org" oninput="renderDelivery()" /></div>
-
+    <div class="field-l"><label>Full Name &amp; Title</label><input id="d-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Position</label><input id="d-position" value="CEO" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Company</label><input id="d-company" value="Glori Creativity Sole.,Ltd" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Sender Phone</label><input id="d-sphone" value="+856 20 95577556" oninput="renderDelivery()"/></div>
+    <div class="field-l"><label>Sender Email</label><input id="d-semail" value="customer_sv@glori-cre.org" oninput="renderDelivery()"/></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
-      <button class="btn btn-secondary" onclick="copyLetter('delivery-preview')">📋 Copy</button>
-      <button class="btn btn-outline" onclick="resetDelivery()">↺ Reset</button>
+      <button class="btn-l btn-primary-l" onclick="window.print()">Print</button>
+      <button class="btn-l btn-secondary-l" onclick="copyLetter('delivery-preview')">Copy</button>
+      <button class="btn-l btn-outline-l" onclick="resetDelivery()">Reset</button>
     </div>
   </div>
-  <div class="preview-panel">
-    <div class="letter" id="delivery-preview"></div>
-  </div>
+  <div class="preview-panel"><div class="letter" id="delivery-preview"></div></div>
 </div>
 
 <!-- SALES CONTRACT -->
-<div class="page" id="page-contract">
+<div class="letter-page" id="page-contract">
   <div class="form-panel">
     <h2>Fill in Details</h2>
-
     <div class="section-title">Parties</div>
-    <div class="field"><label>Seller (Your Company)</label>
-      <input id="c-seller" value="Glori Creativity Sole.,Ltd" oninput="renderContract()" /></div>
-    <div class="field"><label>Buyer (Client Company)</label>
-      <input id="c-buyer" placeholder="e.g. Auto world (KOLAO) Co., Ltd" oninput="renderContract()" /></div>
-    <div class="field"><label>Contract Date</label>
-      <input id="c-date" placeholder="e.g. 16 Jun 2026" oninput="renderContract()" /></div>
-    <div class="field"><label>Contract Number</label>
-      <input id="c-num" placeholder="e.g. GC-2026-001" oninput="renderContract()" /></div>
-
+    <div class="field-l"><label>Seller (Your Company)</label><input id="c-seller" value="Glori Creativity Sole.,Ltd" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Buyer (Client Company)</label><input id="c-buyer" placeholder="e.g. Auto world (KOLAO) Co., Ltd" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Contract Date</label><input id="c-date" placeholder="e.g. 16 Jun 2026" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Contract Number</label><input id="c-num" placeholder="e.g. GC-2026-001" oninput="renderContract()"/></div>
     <div class="section-title">Product / Service</div>
-    <div class="field"><label>Quantity</label>
-      <input id="c-qty" placeholder="e.g. 2,000 sets" oninput="renderContract()" /></div>
-    <div class="field"><label>Product Description</label>
-      <textarea id="c-product" placeholder="e.g. Umbrellas with Cover Bags (HYUNDAI)" oninput="renderContract()"></textarea></div>
-    <div class="field"><label>Unit Price</label>
-      <input id="c-uprice" placeholder="e.g. USD 5.00 / set" oninput="renderContract()" /></div>
-    <div class="field"><label>Total Amount</label>
-      <input id="c-total" placeholder="e.g. USD 10,000.00" oninput="renderContract()" /></div>
-    <div class="field"><label>Payment Terms</label>
-      <textarea id="c-payment" placeholder="e.g. 50% deposit on signing, 50% before delivery" oninput="renderContract()"></textarea></div>
-
+    <div class="field-l"><label>Quantity</label><input id="c-qty" placeholder="e.g. 2,000 sets" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Product Description</label><textarea id="c-product" placeholder="e.g. Umbrellas with Cover Bags (HYUNDAI)" oninput="renderContract()"></textarea></div>
+    <div class="field-l"><label>Unit Price</label><input id="c-uprice" placeholder="e.g. USD 5.00 / set" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Total Amount</label><input id="c-total" placeholder="e.g. USD 10,000.00" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Payment Terms</label><textarea id="c-payment" placeholder="e.g. 50% deposit on signing, 50% before delivery" oninput="renderContract()"></textarea></div>
     <div class="section-title">Delivery</div>
-    <div class="field"><label>Delivery Date</label>
-      <input id="c-deldate" placeholder="e.g. Within 30 days of payment" oninput="renderContract()" /></div>
-    <div class="field"><label>Delivery Address</label>
-      <textarea id="c-address" placeholder="Full delivery address" oninput="renderContract()"></textarea></div>
-
+    <div class="field-l"><label>Delivery Date</label><input id="c-deldate" placeholder="e.g. Within 30 days of payment" oninput="renderContract()"/></div>
+    <div class="field-l"><label>Delivery Address</label><textarea id="c-address" placeholder="Full delivery address" oninput="renderContract()"></textarea></div>
     <div class="section-title">Sender</div>
-    <div class="field"><label>Authorized Signatory</label>
-      <input id="c-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderContract()" /></div>
-    <div class="field"><label>Position</label>
-      <input id="c-position" value="CEO" oninput="renderContract()" /></div>
-
+    <div class="field-l"><label>Authorized Signatory</label><input id="c-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderContract()"/></div>
+    <div class="field-l"><label>Position</label><input id="c-position" value="CEO" oninput="renderContract()"/></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
-      <button class="btn btn-secondary" onclick="copyLetter('contract-preview')">📋 Copy</button>
-      <button class="btn btn-outline" onclick="resetContract()">↺ Reset</button>
+      <button class="btn-l btn-primary-l" onclick="window.print()">Print</button>
+      <button class="btn-l btn-secondary-l" onclick="copyLetter('contract-preview')">Copy</button>
+      <button class="btn-l btn-outline-l" onclick="resetContract()">Reset</button>
     </div>
   </div>
-  <div class="preview-panel">
-    <div class="letter" id="contract-preview"></div>
-  </div>
+  <div class="preview-panel"><div class="letter" id="contract-preview"></div></div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-function g(id) { return (document.getElementById(id)?.value || '').trim(); }
-
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+/* === TAB SWITCHING === */
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.qi-page,.letter-page').forEach(p=>{p.classList.remove('active');});
+  if(name==='quotation'||name==='invoice'){
+    document.getElementById('page-qinv').classList.add('active');
+    var newType=name==='quotation'?'Quotation':'Invoice';
+    var dtEl=document.getElementById('docType');
+    if(dtEl.value!==newType){dtEl.value=newType;document.getElementById('docNo').value=generateNextDocNo(newType);}
+  }else if(name==='delivery'){
+    document.getElementById('page-delivery').classList.add('active');
+    renderDelivery();
+  }else if(name==='contract'){
+    document.getElementById('page-contract').classList.add('active');
+    renderContract();
+  }
 }
 
-function copyLetter(id) {
-  navigator.clipboard.writeText(document.getElementById(id).innerText)
-    .then(() => alert('Copied to clipboard!'));
+/* === HELPERS === */
+function g(id){return(document.getElementById(id)?document.getElementById(id).value:'').trim();}
+var $id=function(id){return document.getElementById(id);};
+var fmt=function(n){return Number(n||0).toLocaleString();};
+
+/* === Q&I CONSTANTS === */
+var COMPANY_NAME="Glori Creativity Sole Co.,Ltd";
+var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
+var LOGO_PATH="LOGO/New-logo.png";
+var LOGO_DATAURL=null;
+var PDF_FONT_READY=false;
+var vatEnabled=false;
+var itemCount=0;
+var editingDocId=null;
+
+/* === LOCAL DB === */
+var DB_KEY="quotation_invoice_db_v1";
+function dbLoadAll(){return JSON.parse(localStorage.getItem(DB_KEY)||"[]");}
+function dbSaveAll(rows){localStorage.setItem(DB_KEY,JSON.stringify(rows));}
+function dbAdd(doc){var rows=dbLoadAll();var row=Object.assign({},doc,{_id:uid(),_savedAt:new Date().toISOString()});rows.unshift(row);dbSaveAll(rows);return row;}
+function dbUpdate(id,doc){var rows=dbLoadAll();var idx=rows.findIndex(function(r){return r._id===id;});if(idx===-1)return false;rows[idx]=Object.assign({},rows[idx],doc,{_id:id,_savedAt:new Date().toISOString()});dbSaveAll(rows);return true;}
+function dbDelete(id){dbSaveAll(dbLoadAll().filter(function(r){return r._id!==id;}));}
+function dbClear(){localStorage.removeItem(DB_KEY);}
+function uid(){try{return crypto.randomUUID();}catch(e){return"id_"+Math.random().toString(16).slice(2)+"_"+Date.now();}}
+
+function generateNextDocNo(docType){
+  var rows=dbLoadAll();
+  var prefix=docType==="Invoice"?"GR-IV-":"GR-QT-";
+  var maxNo=0;
+  rows.forEach(function(r){if(!r.docNo||!r.docNo.startsWith(prefix))return;var num=parseInt(r.docNo.replace(prefix,""),10);if(!isNaN(num))maxNo=Math.max(maxNo,num);});
+  return prefix+String(maxNo+1).padStart(4,"0");
 }
 
-// ── Delivery Letter ──────────────────────────────────────────────────────────
-function renderDelivery() {
-  const dear=g('d-dear'), qty=g('d-qty'), product=g('d-product'), brand=g('d-brand');
-  const dispDate=g('d-dispatchdate'), delDay=g('d-deliveryday'), time=g('d-time');
-  const address=g('d-address'), phone=g('d-phone'), email=g('d-email');
-  const sender=g('d-sender'), position=g('d-position'), company=g('d-company');
-  const sphone=g('d-sphone'), semail=g('d-semail');
-  const subject = qty+' sets of '+product+' ('+brand+')';
-  const subjectS = qty+' '+product+' ('+brand+')';
+async function loadLocalLogoDataURL(){
+  try{
+    var res=await fetch(LOGO_PATH,{cache:"no-store"});
+    if(!res.ok)throw new Error("Logo not found");
+    var blob=await res.blob();
+    LOGO_DATAURL=await new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(String(r.result));};r.onerror=reject;r.readAsDataURL(blob);});
+  }catch(e){LOGO_DATAURL=null;}
+}
 
-  document.getElementById('delivery-preview').innerHTML =
+function abToBase64(ab){var binary="";var bytes=new Uint8Array(ab);var chunk=0x8000;for(var i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));return btoa(binary);}
+
+async function loadPdfFonts(){
+  try{
+    var res=await fetch("fonts/NotoSansLao-Regular.ttf",{cache:"no-store"});
+    if(!res.ok)throw new Error("Font not found");
+    var regB64=abToBase64(await res.arrayBuffer());
+    var boldB64=null;
+    try{var br=await fetch("fonts/NotoSansLao-Bold.ttf",{cache:"no-store"});if(br.ok)boldB64=abToBase64(await br.arrayBuffer());}catch(e){}
+    window.__PDF_FONTS__={regB64:regB64,boldB64:boldB64};PDF_FONT_READY=true;
+  }catch(e){PDF_FONT_READY=false;window.__PDF_FONTS__=null;}
+}
+
+async function compressImageToDataURL(file,maxW,maxH,quality){
+  var objectUrl=URL.createObjectURL(file);
+  var img=await new Promise(function(resolve,reject){var i=new Image();i.onload=function(){resolve(i);};i.onerror=reject;i.src=objectUrl;});
+  var w=img.width,h=img.height;var scale=Math.min(maxW/w,maxH/h,1);w=Math.round(w*scale);h=Math.round(h*scale);
+  var canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;canvas.getContext("2d").drawImage(img,0,0,w,h);
+  var dataUrl=canvas.toDataURL("image/jpeg",quality);URL.revokeObjectURL(objectUrl);return dataUrl;
+}
+
+function addItem(prefill){
+  prefill=prefill||{};itemCount++;
+  var d=document.createElement("div");d.className="item-card";d.dataset.idx=String(itemCount);
+  d.innerHTML='<div class="item-head"><div class="item-no">'+itemCount+'</div><div class="item-actions"><button class="btn2 small" type="button" data-action="add">+ Add Item</button><button class="btn2" type="button" data-action="remove">Remove</button></div></div><div class="item-body"><div class="item-photo"><div class="photo-box">No Image</div><button type="button" class="photo-btn">Upload Photo</button></div><div class="item-right"><textarea class="item-detail" placeholder="Description"></textarea><div class="item-fields"><input class="item-qty" type="number" value="1" min="0"><input class="item-price" type="number" value="0" min="0"></div></div></div>';
+  $id("itemsList").appendChild(d);
+  var fileInput=document.createElement("input");fileInput.type="file";fileInput.accept="image/*";fileInput.style.display="none";d.appendChild(fileInput);
+  d.querySelector(".item-detail").value=prefill.detail||"";
+  d.querySelector(".item-qty").value=prefill.qty!=null?prefill.qty:1;
+  d.querySelector(".item-price").value=prefill.unitPrice!=null?prefill.unitPrice:0;
+  if(prefill.photo){d.dataset.photo=prefill.photo;var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+prefill.photo+'" alt="photo"/>';box.classList.add("has-img");}
+  d.querySelector(".item-detail").addEventListener("input",recalc);
+  d.querySelector(".item-qty").addEventListener("input",recalc);
+  d.querySelector(".item-price").addEventListener("input",recalc);
+  d.querySelector('[data-action="remove"]').addEventListener("click",function(){d.remove();renumberItems();recalc();});
+  d.querySelector('[data-action="add"]').addEventListener("click",function(){addItem();renumberItems();});
+  d.querySelector(".photo-btn").addEventListener("click",function(){fileInput.click();});
+  fileInput.addEventListener("change",async function(){
+    var file=fileInput.files&&fileInput.files[0];if(!file)return;
+    try{var dataUrl=await compressImageToDataURL(file,600,600,0.60);var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+dataUrl+'" alt="photo"/>';box.classList.add("has-img");d.dataset.photo=dataUrl;recalc();}catch(e){alert("Image upload failed");}
+  });
+  recalc();
+}
+
+function clearItems(){$id("itemsList").innerHTML="";itemCount=0;}
+function renumberItems(){var cards=Array.from(document.querySelectorAll(".item-card"));cards.forEach(function(card,idx){var no=card.querySelector(".item-no");if(no)no.textContent=String(idx+1);card.dataset.idx=String(idx+1);});itemCount=cards.length;}
+
+function toggleVat(){vatEnabled=!vatEnabled;$id("vatBtn").innerText=vatEnabled?"VAT: ON (10%)":"VAT: OFF";recalc();}
+
+function recalc(){
+  var subtotal=0;
+  document.querySelectorAll(".item-card").forEach(function(card){subtotal+=Number(card.querySelector(".item-qty").value||0)*Number(card.querySelector(".item-price").value||0);});
+  var discount=Number($id("discount").value||0);var net=Math.max(0,subtotal-discount);var vat=vatEnabled?net*0.1:0;var total=net+vat;
+  var advPct=Math.max(0,Math.min(100,Number($id("advancePercent").value||0)));var advance=total*(advPct/100);var balance=Math.max(0,total-advance);
+  $id("subtotalDisplay").innerText="Subtotal: "+fmt(subtotal);$id("totalDisplay").innerText="Total: "+fmt(total);$id("advanceDisplay").innerText="Advance: "+fmt(advance);$id("balanceDisplay").innerText="Balance Due: "+fmt(balance);
+}
+
+function buildPayload(){
+  var items=[];
+  document.querySelectorAll(".item-card").forEach(function(card){items.push({detail:card.querySelector(".item-detail").value||"",qty:Number(card.querySelector(".item-qty").value||0),unitPrice:Number(card.querySelector(".item-price").value||0),photo:card.dataset.photo||""});});
+  return{docType:$id("docType").value,docNo:$id("docNo").value.trim(),docDate:$id("docDate").value,currency:$id("currency").value,project:$id("project").value,customerName:$id("customerName").value,attentionTo:$id("attentionTo").value,address:$id("address").value,contact:$id("contact").value,bankName:$id("bankName").value||"",accountName:$id("accountName").value||"",accountNumber:$id("accountNumber").value||"",discount:Number($id("discount").value||0),advancePercent:Number($id("advancePercent").value||0),vatEnabled:vatEnabled,vatPercent:vatEnabled?10:0,items:items};
+}
+
+function generatePdf(payload){
+  if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
+  var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({unit:"mm",format:"a4"});
+  if(typeof doc.autoTable!=="function")throw new Error("autoTable not loaded.");
+  if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=16,R=16,TOP=14;
+  var dark=[40,40,40],mid=[110,110,110],line=[210,210,210];
+  function setFontSafe(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
+  var nf0=new Intl.NumberFormat("en-US",{maximumFractionDigits:0});
+  var nf2=new Intl.NumberFormat("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  function money(n){var cur=(payload.currency||"LAK").toUpperCase();var val=Number(n||0);return cur==="LAK"?nf0.format(val):nf2.format(val);}
+  function qtyFmt(n){return nf0.format(Number(n||0));}
+  var isInvoice=(payload.docType||"").toLowerCase()==="invoice";
+  var TITLE=(payload.docType||"INVOICE").toUpperCase();
+  if(LOGO_DATAURL){
+    var fmtImg=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
+    var p=doc.getImageProperties(LOGO_DATAURL);var iw=p.width,ih=p.height;
+    var bW=90,bH=40,bX=-20,bY=10;var scale=Math.min(bW/iw,bH/ih);var w=iw*scale,h=ih*scale;
+    doc.addImage(LOGO_DATAURL,fmtImg,bX+(bW-w)/2,bY+(bH-h)/2,w,h);
+  }
+  doc.setTextColor.apply(doc,dark);doc.setFontSize(38);doc.text(TITLE,W-R,TOP+22,{align:"right"});
+  var leftX=L,leftY=64;
+  doc.setFontSize(10);setFontSafe("bold");doc.setTextColor.apply(doc,dark);doc.text(isInvoice?"INVOICE TO":"QUOTATION TO",leftX,leftY);leftY+=9;
+  doc.setFontSize(16);setFontSafe("bold");doc.text(payload.customerName||"-",leftX,leftY);leftY+=6;
+  doc.setFontSize(9);setFontSafe("normal");doc.setTextColor.apply(doc,mid);
+  if(payload.attentionTo){doc.text(payload.attentionTo,leftX,leftY);leftY+=6;}
+  var cb=[(payload.address?"Address : "+payload.address:""),(payload.contact?"Contact : "+payload.contact:"")].filter(Boolean);
+  doc.text(doc.splitTextToSize(cb.join("\n"),85),leftX,leftY);
+  var metaX=W-R-70,metaY=64;doc.setTextColor.apply(doc,mid);doc.setFontSize(9);setFontSafe("normal");
+  [[isInvoice?"Invoice No":"Quotation No",payload.docNo||"-"],[isInvoice?"Invoice Date":"Quotation Date",payload.docDate||"-"],["Project",payload.project||"-"],["Currency",payload.currency||"-"]].forEach(function(kv){doc.setTextColor.apply(doc,mid);doc.text(String(kv[0]),metaX,metaY);doc.text(":",metaX+30,metaY);doc.setTextColor.apply(doc,dark);doc.text(String(kv[1]),metaX+33,metaY);metaY+=6;});
+  var tableTop=110;doc.setDrawColor.apply(doc,line);doc.setLineWidth(0.4);doc.line(L,tableTop-4,W-R,tableTop-4);
+  var items=payload.items||[];
+  var body=items.length?items.map(function(it,i){var qty=Number(it.qty||0),unit=Number(it.unitPrice||0);return[String(i+1).padStart(2,"0"),"",String(it.detail||""),money(unit),qtyFmt(qty),money(qty*unit)];}):[ ["01","","No items","0","0","0"]];
+  var CW={no:12,photo:32,desc:52,price:26,qty:24,amt:32};
+  doc.autoTable({startY:tableTop,margin:{left:L,right:R},tableWidth:W-L-R,head:[["#","PHOTO","DESCRIPTION","PRICE","QUANTITY","AMOUNT"]],body:body,theme:"grid",styles:{font:PDF_FONT_READY?"NotoSansLao":"helvetica",fontSize:9,cellPadding:4,valign:"middle",lineColor:[235,235,235],lineWidth:0.2,textColor:dark,overflow:"linebreak"},headStyles:{font:PDF_FONT_READY?"NotoSansLao":"helvetica",fillColor:[70,70,70],textColor:[255,255,255],fontStyle:"bold",halign:"center",valign:"middle",minCellHeight:12},columnStyles:{0:{cellWidth:CW.no,halign:"center"},1:{cellWidth:CW.photo,halign:"center"},2:{cellWidth:CW.desc,halign:"left",overflow:"linebreak"},3:{cellWidth:CW.price,halign:"right"},4:{cellWidth:CW.qty,halign:"center"},5:{cellWidth:CW.amt,halign:"right"}},
+  didParseCell:function(data){if(data.section==="body"&&data.row.index%2===1)data.cell.styles.fillColor=[245,245,245];if(data.section==="body"&&data.column.index===1){data.cell.styles.minCellHeight=26;data.cell.text=[];}},
+  didDrawCell:function(data){if(data.section==="body"&&data.column.index===1){var it=items[data.row.index];var photo=it&&it.photo;var x=data.cell.x+2,y=data.cell.y+2,w=data.cell.width-4,h=data.cell.height-4;if(photo){try{var fi=photo.startsWith("data:image/png")?"PNG":"JPEG";var pp=doc.getImageProperties(photo);var sc=Math.min(w/pp.width,h/pp.height);doc.addImage(photo,fi,x+(w-pp.width*sc)/2,y+(h-pp.height*sc)/2,pp.width*sc,pp.height*sc);}catch(e){}}else{doc.setTextColor(160,160,160);doc.setFontSize(7);doc.text("No Image",data.cell.x+data.cell.width/2,data.cell.y+data.cell.height/2,{align:"center"});}}}});
+  var subtotal=0;items.forEach(function(it){subtotal+=Number(it.qty||0)*Number(it.unitPrice||0);});
+  var discount=Number(payload.discount||0),net=Math.max(0,subtotal-discount),vat=payload.vatEnabled?net*0.1:0,total=net+vat;
+  var advPct=Math.max(0,Math.min(100,Number(payload.advancePercent||0))),advance=total*(advPct/100),balance=Math.max(0,total-advance);
+  var aftY=doc.lastAutoTable.finalY+12,boxX=L+CW.no+CW.photo+CW.desc,boxW=CW.price+CW.qty+CW.amt,boxY=aftY;
+  function drawKV(k,v){doc.setTextColor.apply(doc,mid);doc.setFontSize(9);setFontSafe("normal");doc.text(k,boxX,boxY);doc.setTextColor.apply(doc,dark);doc.text(v,boxX+boxW,boxY,{align:"right"});boxY+=8;doc.setDrawColor.apply(doc,line);doc.line(boxX,boxY-3,boxX+boxW,boxY-3);}
+  drawKV("Sub Total",money(subtotal));
+  if(discount>0)drawKV("Discount",money(discount));
+  drawKV(payload.vatEnabled?"Tax (10%)":"Tax (0%)",money(vat));
+  if(advPct>0)drawKV("Advance ("+advPct+"%)",money(advance));
+  doc.setFillColor(70,70,70);doc.rect(boxX,boxY+2,boxW,12,"F");
+  doc.setTextColor(255,255,255);doc.setFontSize(12);setFontSafe("bold");
+  doc.text("BALANCE DUE",boxX+6,boxY+10);doc.text(money(balance),boxX+boxW-6,boxY+10,{align:"right"});
+  var footerY=H-14;
+  if(payload.bankName||payload.accountName||payload.accountNumber){
+    var bankY=footerY-22;doc.setFontSize(10);setFontSafe("bold");doc.setTextColor(60,60,60);doc.text("BANK DETAILS",L,bankY);
+    doc.setFontSize(9);setFontSafe("normal");doc.setTextColor.apply(doc,mid);
+    var bl=[payload.bankName?"Bank Name: "+payload.bankName:"",payload.accountName?"Account Name: "+payload.accountName:"",payload.accountNumber?"Account Number: "+payload.accountNumber:""].filter(Boolean);
+    doc.text(doc.splitTextToSize(bl.join("\n"),95),L,bankY+6);
+  }
+  doc.setFontSize(9);setFontSafe("normal");doc.setTextColor.apply(doc,mid);
+  doc.text(doc.splitTextToSize(FOOTER_CONTACT.join("\n"),92),W-R,footerY-18,{align:"right"});
+  doc.text(COMPANY_NAME,L,footerY);doc.text("Generated: "+new Date().toString(),L,footerY+5);
+  doc.save((payload.docType||"Doc")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf");
+}
+
+function setGenerating(isOn){var btn=$id("saveBtn");if(!btn)return;if(isOn){btn.dataset.oldText=btn.innerText;btn.innerText="Generating...";btn.disabled=true;btn.style.opacity="0.75";}else{btn.innerText=btn.dataset.oldText||"Save & PDF";btn.disabled=false;btn.style.opacity="";}}
+
+async function saveLocal(){
+  var payload=buildPayload();
+  if(!payload.docNo)return alert("Please enter Doc No");
+  if(!payload.customerName)return alert("Please enter Customer Name");
+  setGenerating(true);
+  try{
+    if(editingDocId){dbUpdate(editingDocId,payload);editingDocId=null;$id("saveBtn").textContent="Save & PDF";}
+    else{dbAdd(payload);}
+    renderSavedList();generatePdf(payload);alert("Saved and PDF generated!");
+  }catch(err){console.error(err);alert("Error: "+err.message);}
+  finally{setGenerating(false);}
+}
+
+function loadDocToForm(docRow){
+  $id("docType").value=docRow.docType||"Quotation";$id("docNo").value=docRow.docNo||"";$id("docDate").value=docRow.docDate||"";
+  $id("currency").value=docRow.currency||"LAK";$id("project").value=docRow.project||"";
+  $id("customerName").value=docRow.customerName||"";$id("attentionTo").value=docRow.attentionTo||"";
+  $id("address").value=docRow.address||"";$id("contact").value=docRow.contact||"";
+  $id("discount").value=Number(docRow.discount||0);
+  $id("bankName").value=docRow.bankName||"";$id("accountName").value=docRow.accountName||"";$id("accountNumber").value=docRow.accountNumber||"";
+  $id("advancePercent").value=Number(docRow.advancePercent||0);
+  vatEnabled=!!docRow.vatEnabled;$id("vatBtn").innerText=vatEnabled?"VAT: ON (10%)":"VAT: OFF";
+  clearItems();(docRow.items||[]).forEach(function(it){addItem(it);});
+  if(!(docRow.items||[]).length)addItem();
+  renumberItems();recalc();
+}
+
+function showSaved(show){$id("savedCard").style.display=show?"block":"none";}
+
+function renderSavedList(){
+  var list=$id("savedList");var rows=dbLoadAll();
+  if(!rows.length){list.innerHTML='<div class="muted">No saved documents yet.</div>';return;}
+  list.innerHTML="";
+  rows.forEach(function(docRow){
+    var div=document.createElement("div");div.className="saved-row";
+    var when=(docRow._savedAt||"").replace("T"," ").slice(0,19);
+    div.innerHTML='<div><div class="row-title">'+(docRow.docType||"")+" &bull; "+(docRow.docNo||"")+'</div><div class="row-meta">'+(docRow.customerName||"")+" &bull; "+(docRow.currency||"")+" &bull; saved: "+when+'</div></div><div style="display:flex;gap:8px;flex-shrink:0"><button class="smallbtn" data-act="load">Load</button><button class="smallbtn" data-act="edit">Edit</button><button class="smallbtn" data-act="delete">Delete</button></div>';
+    div.querySelector('[data-act="load"]').addEventListener("click",function(){loadDocToForm(docRow);showSaved(false);});
+    div.querySelector('[data-act="edit"]').addEventListener("click",function(){editingDocId=docRow._id;loadDocToForm(docRow);showSaved(false);$id("saveBtn").textContent="Update";});
+    div.querySelector('[data-act="delete"]').addEventListener("click",function(){if(confirm("Delete "+docRow.docNo+"?")){dbDelete(docRow._id);renderSavedList();}});
+    list.appendChild(div);
+  });
+}
+
+function exportAllJson(){
+  var rows=dbLoadAll();var blob=new Blob([JSON.stringify(rows,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="glori-doc-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
+}
+
+/* === LETTER SECTION === */
+function copyLetter(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(function(){alert('Copied to clipboard!');});}
+
+function renderDelivery(){
+  var dear=g('d-dear'),qty=g('d-qty'),product=g('d-product'),brand=g('d-brand');
+  var dispDate=g('d-dispatchdate'),delDay=g('d-deliveryday'),time=g('d-time');
+  var address=g('d-address'),phone=g('d-phone'),email=g('d-email');
+  var sender=g('d-sender'),position=g('d-position'),company=g('d-company');
+  var sphone=g('d-sphone'),semail=g('d-semail');
+  var subject=qty+' sets of '+product+' ('+brand+')';
+  var subjectS=qty+' '+product+' ('+brand+')';
+  document.getElementById('delivery-preview').innerHTML=
     '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
     '<p style="margin-bottom:6px">Dear: <strong>'+dear+'</strong></p>'+
     '<p style="margin-bottom:18px">Subject: <strong>'+subject+'</strong></p>'+
     '<div class="letter-body">'+
     '<p>We are pleased to inform you that your order for <strong>'+subject+'</strong> has been successfully dispatched and is scheduled for delivery on <strong>'+dispDate+'.</strong> This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.</p>'+
-    '<p><strong>Delivery Details:</strong><br>'+
-    'Delivery Date: '+delDay+'<br>'+
-    'Time Window: '+time+'<br>'+
-    'Shipping Address: '+address+'</p>'+
+    '<p><strong>Delivery Details:</strong><br>Delivery Date: '+delDay+'<br>Time Window: '+time+'<br>Shipping Address: '+address+'</p>'+
     '<p>Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at '+phone+' or '+email+' as soon as possible to make arrangements.</p>'+
     '<p><strong>Instructions for Receiving the Delivery:</strong></p>'+
-    '<p class="inst-item"><strong>Inspection:</strong> Upon receiving the <strong>'+subject+'</strong>, we kindly ask you to inspect the items for any visible damage or discrepancies. Should you notice any issues, please notify the delivery team immediately or contact our customer service at '+phone+'.</p>'+
-    '<p class="inst-item"><strong>Customer Signature:</strong> In order to complete the delivery process, we will require a signature from you or an authorized representative upon receipt of the goods. If you are not available, we kindly request that you make arrangements for someone to sign on your behalf.</p>'+
-    '<p class="inst-item"><strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. Once signed, the delivery will be officially complete. A copy of this receipt will be provided to you for your records.</p>'+
-    '<p class="inst-item"><strong>Post-Delivery Support:</strong> Should you have any questions regarding your <strong>'+subjectS+'</strong>, or if you need assistance with assembly or care instructions, please don\'t hesitate to reach out to our customer support team. We are committed to ensuring your satisfaction and will be happy to assist with any inquiries you may have.</p>'+
-    '<p>Thank you for choosing <strong>'+company+'</strong> for your purchase. We value your business and look forward to serving you again in the future.</p>'+
+    '<p><strong>Inspection:</strong> Upon receiving the <strong>'+subject+'</strong>, please inspect the items for any visible damage or discrepancies. Should you notice any issues, please notify the delivery team immediately or contact our customer service at '+phone+'.</p>'+
+    '<p><strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt. If you are not available, please arrange for someone to sign on your behalf.</p>'+
+    '<p><strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. Once signed, the delivery will be officially complete. A copy of this receipt will be provided to you for your records.</p>'+
+    '<p><strong>Post-Delivery Support:</strong> Should you have any questions regarding your <strong>'+subjectS+'</strong>, please do not hesitate to reach out to our customer support team.</p>'+
+    '<p>Thank you for choosing <strong>'+company+'</strong>. We value your business and look forward to serving you again in the future.</p>'+
     '</div>'+
-    '<div style="margin-top:48px">'+
-    '<div class="receipt-line">Delivery Receipt (for signature)</div>'+
-    '<p>Sincerely,</p><br>'+
-    '<p class="sig-name">'+sender+'</p>'+
-    '<p>'+position+'</p><p>'+company+'</p><p>'+sphone+'</p><p>'+semail+'</p>'+
-    '</div>';
+    '<div style="margin-top:48px"><div class="receipt-line">Delivery Receipt (for signature)</div>'+
+    '<p>Sincerely,</p><br><p class="sig-name">'+sender+'</p><p>'+position+'</p><p>'+company+'</p><p>'+sphone+'</p><p>'+semail+'</p></div>';
 }
 
-function resetDelivery() {
-  var d = {'d-dear':'Auto world (KOLAO Developing Sole) Co., Ltd','d-qty':'2,000','d-product':'Umbrellas with Cover Bags','d-brand':'HYUNDAI','d-dispatchdate':'16 Jun 2026','d-deliveryday':'Within 25–30 days from dispatch date','d-time':'01:00 PM to 06:00 PM','d-address':'Kolao A/S Service Center, Auto CityT2 Road, Nakham Village, Sikhottabong District, Vientiane Capital, Lao PDR','d-phone':'+856 20 95577556','d-email':'glori.ct27@gmail.com','d-sender':'TOTO OUTAMAVONGSA Mr.','d-position':'CEO','d-company':'Glori Creativity Sole.,Ltd','d-sphone':'+856 20 95577556','d-semail':'customer_sv@glori-cre.org'};
-  Object.entries(d).forEach(([id,val])=>{ document.getElementById(id).value=val; });
-  renderDelivery();
+function resetDelivery(){
+  var d={'d-dear':'Auto world (KOLAO Developing Sole) Co., Ltd','d-qty':'2,000','d-product':'Umbrellas with Cover Bags','d-brand':'HYUNDAI','d-dispatchdate':'16 Jun 2026','d-deliveryday':'Within 25-30 days from dispatch date','d-time':'01:00 PM to 06:00 PM','d-address':'Kolao A/S Service Center, Auto CityT2 Road, Nakham Village, Sikhottabong District, Vientiane Capital, Lao PDR','d-phone':'+856 20 95577556','d-email':'glori.ct27@gmail.com','d-sender':'TOTO OUTAMAVONGSA Mr.','d-position':'CEO','d-company':'Glori Creativity Sole.,Ltd','d-sphone':'+856 20 95577556','d-semail':'customer_sv@glori-cre.org'};
+  Object.entries(d).forEach(function(e){document.getElementById(e[0]).value=e[1];});renderDelivery();
 }
 
-// ── Sales Contract ───────────────────────────────────────────────────────────
-function renderContract() {
-  var seller=g('c-seller'), buyer=g('c-buyer')||'_______________', date=g('c-date')||'_______________';
-  var num=g('c-num')||'_______________', qty=g('c-qty')||'—', product=g('c-product')||'—';
-  var uprice=g('c-uprice')||'—', total=g('c-total')||'—', payment=g('c-payment')||'_______________';
-  var deldate=g('c-deldate')||'_______________', address=g('c-address')||'_______________';
-  var sender=g('c-sender'), position=g('c-position');
-
-  document.getElementById('contract-preview').innerHTML =
+function renderContract(){
+  var seller=g('c-seller'),buyer=g('c-buyer')||'_______________',date=g('c-date')||'_______________';
+  var num=g('c-num')||'_______________',qty=g('c-qty')||'&mdash;',product=g('c-product')||'&mdash;';
+  var uprice=g('c-uprice')||'&mdash;',total=g('c-total')||'&mdash;',payment=g('c-payment')||'_______________';
+  var deldate=g('c-deldate')||'_______________',address=g('c-address')||'_______________';
+  var sender=g('c-sender'),position=g('c-position');
+  document.getElementById('contract-preview').innerHTML=
     '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
     '<p style="text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:20px;text-decoration:underline;">SALES CONTRACT</p>'+
-    '<table style="width:100%;margin-bottom:18px;font-size:0.95em;"><tr>'+
-    '<td><strong>Contract No.:</strong> '+num+'</td>'+
-    '<td style="text-align:right"><strong>Date:</strong> '+date+'</td></tr></table>'+
+    '<table style="width:100%;margin-bottom:18px;font-size:.95em"><tr><td><strong>Contract No.:</strong> '+num+'</td><td style="text-align:right"><strong>Date:</strong> '+date+'</td></tr></table>'+
     '<p style="margin-bottom:8px"><strong>SELLER:</strong> '+seller+'</p>'+
     '<p style="margin-bottom:18px"><strong>BUYER:</strong> '+buyer+'</p>'+
-    '<p style="margin-bottom:14px">This Sales Contract ("Contract") is entered into as of <strong>'+date+'</strong> between <strong>'+seller+'</strong> ("Seller") and <strong>'+buyer+'</strong> ("Buyer") for the following goods:</p>'+
-    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">'+
-    '<thead><tr style="background:#f5f5f5;">'+
-    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:left;">Description</th>'+
-    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:center;">Qty</th>'+
-    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:right;">Unit Price</th>'+
-    '<th style="border:1px solid #ccc;padding:7px 10px;text-align:right;">Total</th></tr></thead>'+
-    '<tbody><tr>'+
-    '<td style="border:1px solid #ccc;padding:7px 10px;">'+product+'</td>'+
-    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:center;">'+qty+'</td>'+
-    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:right;">'+uprice+'</td>'+
-    '<td style="border:1px solid #ccc;padding:7px 10px;text-align:right;">'+total+'</td>'+
-    '</tr></tbody></table>'+
+    '<p style="margin-bottom:14px">This Sales Contract is entered into as of <strong>'+date+'</strong> between <strong>'+seller+'</strong> ("Seller") and <strong>'+buyer+'</strong> ("Buyer") for the following goods:</p>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><thead><tr style="background:#f5f5f5"><th style="border:1px solid #ccc;padding:7px 10px;text-align:left">Description</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:center">Qty</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">Unit Price</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">Total</th></tr></thead><tbody><tr><td style="border:1px solid #ccc;padding:7px 10px">'+product+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:center">'+qty+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+uprice+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+total+'</td></tr></tbody></table>'+
     '<p style="margin-bottom:8px"><strong>Payment Terms:</strong> '+payment+'</p>'+
     '<p style="margin-bottom:4px"><strong>Delivery Date:</strong> '+deldate+'</p>'+
     '<p style="margin-bottom:18px"><strong>Delivery Address:</strong> '+address+'</p>'+
     '<p style="margin-bottom:32px">Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.</p>'+
-    '<table style="width:100%;"><tr>'+
-    '<td style="width:48%;vertical-align:top">'+
-    '<p><strong>SELLER</strong></p><br><br>'+
-    '<p style="border-top:1px solid #333;padding-top:6px;font-weight:bold;">'+sender+'</p>'+
-    '<p>'+position+'</p><p>'+seller+'</p></td>'+
-    '<td style="width:4%"></td>'+
-    '<td style="width:48%;vertical-align:top">'+
-    '<p><strong>BUYER</strong></p><br><br>'+
-    '<p style="border-top:1px solid #333;padding-top:6px;">Authorized Representative</p>'+
-    '<p>'+buyer+'</p></td></tr></table>';
+    '<table style="width:100%"><tr><td style="width:48%;vertical-align:top"><p><strong>SELLER</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px;font-weight:bold">'+sender+'</p><p>'+position+'</p><p>'+seller+'</p></td><td style="width:4%"></td><td style="width:48%;vertical-align:top"><p><strong>BUYER</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px">Authorized Representative</p><p>'+buyer+'</p></td></tr></table>';
 }
 
-function resetContract() {
-  ['c-buyer','c-date','c-num','c-qty','c-product','c-uprice','c-total','c-payment','c-deldate','c-address'].forEach(id=>{ document.getElementById(id).value=''; });
+function resetContract(){
+  ['c-buyer','c-date','c-num','c-qty','c-product','c-uprice','c-total','c-payment','c-deldate','c-address'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('c-seller').value='Glori Creativity Sole.,Ltd';
   document.getElementById('c-sender').value='TOTO OUTAMAVONGSA Mr.';
   document.getElementById('c-position').value='CEO';
   renderContract();
 }
 
-renderDelivery();
-renderContract();
+/* === INIT === */
+window.addEventListener("load",async function(){
+  $id("docDate").valueAsDate=new Date();
+  await loadPdfFonts();
+  await loadLocalLogoDataURL();
+  $id("docNo").value=generateNextDocNo($id("docType").value);
+  $id("docType").addEventListener("change",function(){$id("docNo").value=generateNextDocNo($id("docType").value);});
+  $id("addBtn").addEventListener("click",function(){addItem();renumberItems();});
+  $id("vatBtn").addEventListener("click",toggleVat);
+  $id("discount").addEventListener("input",recalc);
+  $id("advancePercent").addEventListener("input",recalc);
+  $id("saveBtn").addEventListener("click",saveLocal);
+  $id("viewBtn").addEventListener("click",function(){renderSavedList();showSaved(true);});
+  $id("closeSavedBtn").addEventListener("click",function(){showSaved(false);});
+  $id("clearAllBtn").addEventListener("click",function(){if(confirm("Clear ALL saved documents?")){dbClear();renderSavedList();}});
+  $id("exportBtn").addEventListener("click",exportAllJson);
+  addItem();
+  renderDelivery();
+  renderContract();
+});
 </script>
 </body>
 </html>
