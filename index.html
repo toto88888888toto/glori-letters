@@ -129,10 +129,10 @@
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('quotation',this)">&#128203; Quotation</button>
-  <button class="tab-btn" onclick="switchTab('invoice',this)">&#129534; Invoice</button>
-  <button class="tab-btn" onclick="switchTab('delivery',this)">&#128230; Delivery Letter</button>
-  <button class="tab-btn" onclick="switchTab('contract',this)">&#128195; Sales Contract</button>
+  <button class="tab-btn active" data-tab="quotation">&#128203; Quotation</button>
+  <button class="tab-btn" data-tab="invoice">&#129534; Invoice</button>
+  <button class="tab-btn" data-tab="delivery">&#128230; Delivery Letter</button>
+  <button class="tab-btn" data-tab="contract">&#128195; Sales Contract</button>
 </div>
 
 <!-- QUOTATION / INVOICE PAGE -->
@@ -292,20 +292,31 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 /* === TAB SWITCHING === */
-function switchTab(name,btn){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.qi-page,.letter-page').forEach(p=>{p.classList.remove('active');});
+function switchTab(name){
+  // Update tab button styles
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab===name);
+  });
+  // Hide all pages
+  var pages=['page-qinv','page-delivery','page-contract'];
+  pages.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+  // Show the right page
   if(name==='quotation'||name==='invoice'){
-    document.getElementById('page-qinv').classList.add('active');
+    var el=document.getElementById('page-qinv');
+    if(el) el.style.display='block';
     var newType=name==='quotation'?'Quotation':'Invoice';
     var dtEl=document.getElementById('docType');
-    if(dtEl.value!==newType){dtEl.value=newType;document.getElementById('docNo').value=generateNextDocNo(newType);}
+    if(dtEl&&dtEl.value!==newType){dtEl.value=newType;document.getElementById('docNo').value=generateNextDocNo(newType);}
   }else if(name==='delivery'){
-    document.getElementById('page-delivery').classList.add('active');
+    var el=document.getElementById('page-delivery');
+    if(el) el.style.display='grid';
     renderDelivery();
   }else if(name==='contract'){
-    document.getElementById('page-contract').classList.add('active');
+    var el=document.getElementById('page-contract');
+    if(el) el.style.display='grid';
     renderContract();
   }
 }
@@ -646,6 +657,10 @@ function resetContract(){
 
 /* === INIT === */
 window.addEventListener("load",async function(){
+  // Init page visibility
+  document.getElementById('page-qinv').style.display='block';
+  document.getElementById('page-delivery').style.display='none';
+  document.getElementById('page-contract').style.display='none';
   $id("docDate").valueAsDate=new Date();
   await loadPdfFonts();
   await loadLocalLogoDataURL();
@@ -664,6 +679,10 @@ window.addEventListener("load",async function(){
   renderDelivery();
   renderContract();
   // Init Google Auth when GIS loads
+  // Tab button listeners
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){ switchTab(btn.dataset.tab); });
+  });
   var tries=0;var gisTimer=setInterval(function(){tries++;if(initGoogleAuth()||tries>=20)clearInterval(gisTimer);},500);
 });
 </script>
