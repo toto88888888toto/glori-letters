@@ -333,6 +333,7 @@ var COMPANY_NAME="Glori Creativity Sole Co.,Ltd";
 var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
 var LOGO_PATH="LOGO/New-logo.png";
 var LOGO_DATAURL=null;
+var BG_IMAGE_DATAURL=null;
 var PDF_FONT_READY=false;
 var vatEnabled=false;
 var itemCount=0;
@@ -548,7 +549,7 @@ var tokenClient=null,accessToken=null,folderCache={};
 function initGoogleAuth(){
   if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
   if(tokenClient)return true;
-  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(){}});
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(resp){if(resp&&resp.access_token){accessToken=resp.access_token;loadBackgroundFromDrive();}}});
   return true;
 }
 
@@ -556,9 +557,34 @@ function ensureDriveToken(){
   return new Promise(function(resolve,reject){
     if(!initGoogleAuth())return reject(new Error("Google Identity Services not ready. Try again in a moment."));
     if(accessToken)return resolve(accessToken);
-    tokenClient.callback=function(resp){if(!resp||!resp.access_token)return reject(new Error("No access token returned."));accessToken=resp.access_token;resolve(accessToken);};
+    tokenClient.callback=function(resp){if(!resp||!resp.access_token)return reject(new Error("No access token returned."));accessToken=resp.access_token;loadBackgroundFromDrive();resolve(accessToken);};
     tokenClient.requestAccessToken({prompt:""});
   });
+}
+
+async function loadBackgroundFromDrive(){
+  try{
+    if(!accessToken)return;
+    // Find Elements folder inside Glori documents
+    var q1=encodeURIComponent("name='Elements' and '"+DRIVE_FOLDER_GLORI+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false");
+    var r1=await fetch("https://www.googleapis.com/drive/v3/files?q="+q1+"&fields=files(id)",{headers:{Authorization:"Bearer "+accessToken}});
+    var d1=await r1.json();
+    if(!d1.files||!d1.files.length)return;
+    var elemId=d1.files[0].id;
+    // Find Background.png inside Elements
+    var q2=encodeURIComponent("name='Background.png' and '"+elemId+"' in parents and trashed=false");
+    var r2=await fetch("https://www.googleapis.com/drive/v3/files?q="+q2+"&fields=files(id)",{headers:{Authorization:"Bearer "+accessToken}});
+    var d2=await r2.json();
+    if(!d2.files||!d2.files.length)return;
+    var bgId=d2.files[0].id;
+    // Download file as blob
+    var r3=await fetch("https://www.googleapis.com/drive/v3/files/"+bgId+"?alt=media",{headers:{Authorization:"Bearer "+accessToken}});
+    if(!r3.ok)return;
+    var blob=await r3.blob();
+    var reader=new FileReader();
+    reader.onload=function(e){BG_IMAGE_DATAURL=e.target.result;};
+    reader.readAsDataURL(blob);
+  }catch(e){console.warn("Background load failed:",e);}
 }
 
 async function getOrCreateSubfolder(name){
@@ -601,8 +627,10 @@ function generateDeliveryPdfBase64(){
   var doc=new jsPDF({unit:"mm",format:"a4"});
   if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
   function sf(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
-  var W=doc.internal.pageSize.getWidth(),L=20,R=20,y=18;
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=20,R=20,y=18;
   var dark=[40,40,40],mid=[100,100,100];
+  // Background image (full page, drawn first)
+  if(BG_IMAGE_DATAURL){try{var bgFmt=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgFmt,0,0,W,H);}catch(e){console.warn("BG draw failed",e);}}
   // Logo
   if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
   // Company header
@@ -656,9 +684,11 @@ function generateContractPdfBase64(){
   var doc=new jsPDF({unit:"mm",format:"a4"});
   if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
   function sf(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
-  var W=doc.internal.pageSize.getWidth(),L=20,R=20,y=18;
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=20,R=20,y=18;
   var dark=[40,40,40],mid=[100,100,100];
   var TW=W-L-R;
+  // Background image (full page, drawn first)
+  if(BG_IMAGE_DATAURL){try{var bgFmt=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgFmt,0,0,W,H);}catch(e){console.warn("BG draw failed",e);}}
   if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
   doc.setFontSize(16);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("GLORI CREATIVITY SOLE.,LTD",W/2,y+8,{align:"center"});
   doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,mid);doc.text("customer_sv@glori-cre.org  |  +856 20 95577556",W/2,y+15,{align:"center"});
