@@ -129,10 +129,10 @@
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" data-tab="quotation">&#128203; Quotation</button>
-  <button class="tab-btn" data-tab="invoice">&#129534; Invoice</button>
-  <button class="tab-btn" data-tab="delivery">&#128230; Delivery Letter</button>
-  <button class="tab-btn" data-tab="contract">&#128195; Sales Contract</button>
+  <button class="tab-btn active" data-tab="quotation" onclick="switchTab('quotation')">&#128203; Quotation</button>
+  <button class="tab-btn" data-tab="invoice" onclick="switchTab('invoice')">&#129534; Invoice</button>
+  <button class="tab-btn" data-tab="delivery" onclick="switchTab('delivery')">&#128230; Delivery Letter</button>
+  <button class="tab-btn" data-tab="contract" onclick="switchTab('contract')">&#128195; Sales Contract</button>
 </div>
 
 <!-- QUOTATION / INVOICE PAGE -->
@@ -291,7 +291,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-/* === TAB SWITCHING === */
+/* === TAB SWITCHING — runs immediately, no dependencies === */
 function switchTab(name){
   // Update tab button styles
   document.querySelectorAll('.tab-btn').forEach(function(b){
@@ -567,15 +567,7 @@ async function backupDbToDrive(){
   var fileName="glori-"+docTypeNow+"-backup-"+new Date().toISOString().slice(0,19).replace(/:/g,"-")+".json";
   var boundary="-------314159265358979323846";
   var metadata={name:fileName,mimeType:"application/json",parents:[folderId]};
-  var body="--"+boundary+"
-Content-Type: application/json; charset=UTF-8
-
-"+JSON.stringify(metadata)+"
---"+boundary+"
-Content-Type: application/json
-
-"+jsonText+"
---"+boundary+"--";
+  var body="--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(metadata)+"\r\n--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+jsonText+"\r\n--"+boundary+"--";
   var res=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"multipart/related; boundary="+boundary},body:body});
   if(!res.ok)throw new Error(await res.text());
   return true;
