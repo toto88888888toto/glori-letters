@@ -583,6 +583,128 @@ async function uploadToDriveFolder(folderName,fileName,content){
   return true;
 }
 
+async function uploadPdfToDriveFolder(folderName,fileName,pdfBase64){
+  var folderId=await getOrCreateSubfolder(folderName);
+  var boundary="-------314159265358979323846";
+  var metadata={name:fileName,mimeType:"application/pdf",parents:[folderId]};
+  var metaStr=JSON.stringify(metadata);
+  // Build multipart body with binary PDF data
+  var head="--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+metaStr+"\r\n--"+boundary+"\r\nContent-Type: application/pdf\r\nContent-Transfer-Encoding: base64\r\n\r\n"+pdfBase64+"\r\n--"+boundary+"--";
+  var res=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"multipart/related; boundary="+boundary},body:head});
+  if(!res.ok)throw new Error(await res.text());
+  return true;
+}
+
+function generateDeliveryPdfBase64(){
+  if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:"mm",format:"a4"});
+  if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
+  function sf(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
+  var W=doc.internal.pageSize.getWidth(),L=20,R=20,y=18;
+  var dark=[40,40,40],mid=[100,100,100];
+  // Logo
+  if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
+  // Company header
+  doc.setFontSize(16);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("GLORI CREATIVITY SOLE.,LTD",W/2,y+8,{align:"center"});
+  doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,mid);
+  doc.text("customer_sv@glori-cre.org  |  +856 20 95577556",W/2,y+15,{align:"center"});
+  y+=28;
+  doc.setDrawColor(200,200,200);doc.setLineWidth(0.5);doc.line(L,y,W-R,y);y+=10;
+  // Title
+  doc.setFontSize(14);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("DELIVERY LETTER",W/2,y,{align:"center"});y+=12;
+  var dear=g('d-dear'),qty=g('d-qty'),product=g('d-product'),brand=g('d-brand');
+  var dispDate=g('d-dispatchdate'),delDay=g('d-deliveryday'),time=g('d-time');
+  var address=g('d-address'),phone=g('d-phone'),email=g('d-email');
+  var sender=g('d-sender'),position=g('d-position'),company=g('d-company');
+  var sphone=g('d-sphone'),semail=g('d-semail');
+  var subject=qty+' sets of '+product+' ('+brand+')';
+  var TW=W-L-R;
+  function line2(label,val){doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(label+": ",L,y);doc.setFontSize(10);sf("normal");doc.text(val,L+doc.getTextWidth(label+": "),y);y+=7;}
+  function para(txt){doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);var lines=doc.splitTextToSize(txt,TW);doc.text(lines,L,y);y+=lines.length*5.5+3;}
+  line2("Dear",dear);
+  line2("Subject",subject);
+  y+=3;
+  doc.setDrawColor(220,220,220);doc.line(L,y,W-R,y);y+=7;
+  para("We are pleased to inform you that your order for "+subject+" has been successfully dispatched and is scheduled for delivery on "+dispDate+". This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.");
+  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("Delivery Details:",L,y);y+=6;
+  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);
+  ["Delivery Date: "+delDay,"Time Window: "+time,"Shipping Address: "+address].forEach(function(t){var lines=doc.splitTextToSize(t,TW-6);doc.text(lines,L+4,y);y+=lines.length*5.5+2;});
+  y+=2;
+  para("Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at "+phone+" or "+email+" as soon as possible.");
+  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("Instructions for Receiving the Delivery:",L,y);y+=7;
+  [["Inspection:","Upon receiving the "+subject+", please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team immediately or contact our customer service at "+phone+"."],["Customer Signature:","A signature from you or an authorized representative is required upon receipt."],["Delivery Confirmation:","The delivery team will present you with a receipt for your signature. A copy will be provided to you for your records."]].forEach(function(kv){doc.setFontSize(9.5);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(kv[0],L+4,y);doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);var lines=doc.splitTextToSize(kv[1],TW-doc.getTextWidth(kv[0])-8);doc.text(kv[1].slice(0,0),L+4+doc.getTextWidth(kv[0]+" "),y);var wrapped=doc.splitTextToSize(kv[1],TW-10);doc.text(wrapped,L+6,y+5.5);y+=wrapped.length*5.5+9;});
+  para("Thank you for choosing "+company+". We value your business and look forward to serving you again.");
+  y+=8;
+  // Signature block
+  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);doc.text("Sincerely,",L,y);y+=14;
+  doc.setDrawColor(80,80,80);doc.line(L,y,L+60,y);y+=5;
+  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(sender,L,y);y+=5;
+  doc.setFontSize(9);sf("normal");doc.setTextColor(60,60,60);doc.text(position,L,y);y+=5;
+  doc.text(company,L,y);y+=5;
+  doc.text(sphone+"  |  "+semail,L,y);
+  // Receipt line at bottom
+  var H=doc.internal.pageSize.getHeight();
+  doc.setDrawColor(200,200,200);doc.line(L,H-25,W-R,H-25);
+  doc.setFontSize(8);doc.setTextColor(120,120,120);doc.text("Delivery Receipt (Signature): ____________________________   Date: _______________",L,H-18);
+  return doc.output("datauristring").split(",")[1];
+}
+
+function generateContractPdfBase64(){
+  if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:"mm",format:"a4"});
+  if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
+  function sf(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
+  var W=doc.internal.pageSize.getWidth(),L=20,R=20,y=18;
+  var dark=[40,40,40],mid=[100,100,100];
+  var TW=W-L-R;
+  if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
+  doc.setFontSize(16);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("GLORI CREATIVITY SOLE.,LTD",W/2,y+8,{align:"center"});
+  doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,mid);doc.text("customer_sv@glori-cre.org  |  +856 20 95577556",W/2,y+15,{align:"center"});
+  y+=28;
+  doc.setDrawColor(200,200,200);doc.setLineWidth(0.5);doc.line(L,y,W-R,y);y+=10;
+  doc.setFontSize(15);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("SALES CONTRACT",W/2,y,{align:"center"});y+=12;
+  var seller=g('c-seller'),buyer=g('c-buyer')||"_______________",date=g('c-date')||"_______________";
+  var num=g('c-num')||"_______________",qty=g('c-qty')||"—",product=g('c-product')||"—";
+  var uprice=g('c-uprice')||"—",total=g('c-total')||"—",payment=g('c-payment')||"_______________";
+  var deldate=g('c-deldate')||"_______________",address=g('c-address')||"_______________";
+  var sender=g('c-sender'),position=g('c-position');
+  // Meta row
+  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("Contract No.: "+num,L,y);doc.text("Date: "+date,W-R,y,{align:"right"});y+=8;
+  doc.setFontSize(10);sf("normal");doc.text("Seller: "+seller,L,y);y+=6;
+  doc.text("Buyer: "+buyer,L,y);y+=10;
+  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);
+  var intro='This Sales Contract is entered into as of '+date+' between '+seller+' (Seller) and '+buyer+' (Buyer) for the following goods:';
+  var introLines=doc.splitTextToSize(intro,TW);doc.text(introLines,L,y);y+=introLines.length*5.5+6;
+  // Table
+  var colW=[TW*0.4,TW*0.15,TW*0.22,TW*0.23];
+  var headers=["Description","Qty","Unit Price","Total"];
+  var rowH=8,hY=y;
+  doc.setFillColor(70,70,70);doc.rect(L,hY,TW,rowH,"F");
+  doc.setFontSize(9);sf("bold");doc.setTextColor(255,255,255);
+  var cx=L;headers.forEach(function(h,i){doc.text(h,cx+2,hY+5.5);cx+=colW[i];});
+  y+=rowH;
+  doc.setFillColor(248,248,248);doc.rect(L,y,TW,rowH+2,"F");
+  doc.setDrawColor(200,200,200);doc.rect(L,y,TW,rowH+2);
+  doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,dark);
+  var vals=[product,qty,uprice,total];cx=L;
+  vals.forEach(function(v,i){var lines=doc.splitTextToSize(String(v),colW[i]-4);doc.text(lines,cx+2,y+5.5);cx+=colW[i];});
+  y+=rowH+2+10;
+  // Terms
+  function field(label,val){doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(label+": ",L,y);sf("normal");var lines=doc.splitTextToSize(val,TW-doc.getTextWidth(label+": ")-2);doc.text(lines,L+doc.getTextWidth(label+": "),y);y+=Math.max(lines.length,1)*5.5+4;}
+  field("Payment Terms",payment);
+  field("Delivery Date",deldate);
+  field("Delivery Address",address);
+  y+=4;
+  var closeLines=doc.splitTextToSize("Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.",TW);
+  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);doc.text(closeLines,L,y);y+=closeLines.length*5.5+16;
+  // Signature blocks
+  var half=(TW-10)/2;
+  ["SELLER","BUYER"].forEach(function(label,i){var sx=i===0?L:L+half+10;doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(label,sx,y);doc.setDrawColor(80,80,80);doc.line(sx,y+18,sx+half,y+18);doc.setFontSize(9);sf("normal");doc.setTextColor(60,60,60);if(i===0){doc.text(sender,sx,y+23);doc.text(position,sx,y+29);doc.text(seller,sx,y+35);}else{doc.text("Authorized Representative",sx,y+23);doc.text(buyer,sx,y+29);}});
+  return doc.output("datauristring").split(",")[1];
+}
+
 async function backupDbToDrive(){
   if(!accessToken)throw new Error("No access token.");
   var rows=dbLoadAll();
@@ -595,22 +717,24 @@ async function backupDbToDrive(){
 async function saveDeliveryToDrive(){
   try{
     await ensureDriveToken();
-    var data={type:"Delivery",dear:g('d-dear'),qty:g('d-qty'),product:g('d-product'),brand:g('d-brand'),dispatchDate:g('d-dispatchdate'),deliveryDay:g('d-deliveryday'),time:g('d-time'),address:g('d-address'),phone:g('d-phone'),email:g('d-email'),sender:g('d-sender'),position:g('d-position'),company:g('d-company'),sphone:g('d-sphone'),semail:g('d-semail'),savedAt:new Date().toISOString()};
+    var dear=g('d-dear');
     var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
-    var name="delivery-"+(data.dear.slice(0,25).replace(/[^\w]+/g,"-"))+"-"+ts+".json";
-    await uploadToDriveFolder("Delivery",name,JSON.stringify(data,null,2));
-    alert("Delivery letter saved to Google Drive > Delivery folder!");
+    var name="Delivery-"+(dear.slice(0,30).replace(/[^\w]+/g,"-"))+"-"+ts+".pdf";
+    var pdfB64=generateDeliveryPdfBase64();
+    await uploadPdfToDriveFolder("Delivery",name,pdfB64);
+    alert("Delivery letter PDF saved to Google Drive > Delivery folder!");
   }catch(e){alert("Drive save failed: "+e.message);}
 }
 
 async function saveContractToDrive(){
   try{
     await ensureDriveToken();
-    var data={type:"Contract",seller:g('c-seller'),buyer:g('c-buyer'),date:g('c-date'),num:g('c-num'),qty:g('c-qty'),product:g('c-product'),uprice:g('c-uprice'),total:g('c-total'),payment:g('c-payment'),deldate:g('c-deldate'),address:g('c-address'),sender:g('c-sender'),position:g('c-position'),savedAt:new Date().toISOString()};
+    var num=g('c-num')||g('c-buyer').slice(0,20);
     var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
-    var name="contract-"+(data.num||data.buyer.slice(0,20)).replace(/[^\w]+/g,"-")+"-"+ts+".json";
-    await uploadToDriveFolder("Contract",name,JSON.stringify(data,null,2));
-    alert("Contract saved to Google Drive > Contract folder!");
+    var name="Contract-"+num.replace(/[^\w]+/g,"-")+"-"+ts+".pdf";
+    var pdfB64=generateContractPdfBase64();
+    await uploadPdfToDriveFolder("Contract",name,pdfB64);
+    alert("Sales Contract PDF saved to Google Drive > Contract folder!");
   }catch(e){alert("Drive save failed: "+e.message);}
 }
 
