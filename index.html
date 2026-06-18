@@ -251,9 +251,10 @@
     <div class="field-l"><label>Sender Phone</label><input id="d-sphone" value="+856 20 95577556" oninput="renderDelivery()"/></div>
     <div class="field-l"><label>Sender Email</label><input id="d-semail" value="customer_sv@glori-cre.org" oninput="renderDelivery()"/></div>
     <div class="btn-row">
-      <button class="btn-l btn-primary-l" onclick="window.print()">Print</button>
-      <button class="btn-l btn-secondary-l" onclick="copyLetter('delivery-preview')">Copy</button>
-      <button class="btn-l btn-outline-l" onclick="resetDelivery()">Reset</button>
+      <button class="btn-l btn-primary-l" onclick="window.print()">&#128424; Print</button>
+      <button class="btn-l btn-secondary-l" onclick="copyLetter('delivery-preview')">&#128203; Copy</button>
+      <button class="btn-l" style="background:#34a853;color:#fff" onclick="saveDeliveryToDrive()">&#9729; Drive</button>
+      <button class="btn-l btn-outline-l" onclick="resetDelivery()">&#8634; Reset</button>
     </div>
   </div>
   <div class="preview-panel"><div class="letter" id="delivery-preview"></div></div>
@@ -281,9 +282,10 @@
     <div class="field-l"><label>Authorized Signatory</label><input id="c-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderContract()"/></div>
     <div class="field-l"><label>Position</label><input id="c-position" value="CEO" oninput="renderContract()"/></div>
     <div class="btn-row">
-      <button class="btn-l btn-primary-l" onclick="window.print()">Print</button>
-      <button class="btn-l btn-secondary-l" onclick="copyLetter('contract-preview')">Copy</button>
-      <button class="btn-l btn-outline-l" onclick="resetContract()">Reset</button>
+      <button class="btn-l btn-primary-l" onclick="window.print()">&#128424; Print</button>
+      <button class="btn-l btn-secondary-l" onclick="copyLetter('contract-preview')">&#128203; Copy</button>
+      <button class="btn-l" style="background:#34a853;color:#fff" onclick="saveContractToDrive()">&#9729; Drive</button>
+      <button class="btn-l btn-outline-l" onclick="resetContract()">&#8634; Reset</button>
     </div>
   </div>
   <div class="preview-panel"><div class="letter" id="contract-preview"></div></div>
@@ -541,7 +543,7 @@ function renderSavedList(){
 /* === GOOGLE DRIVE BACKUP === */
 var GOOGLE_CLIENT_ID="811125615229-r9i81g6drdrg6fq7o68fp1s02h13r5uu.apps.googleusercontent.com";
 var DRIVE_FOLDER_GLORI="1dYuaj9xbrO6JCpbkVk7cX96aPv8RvB2k";
-var tokenClient=null,accessToken=null;
+var tokenClient=null,accessToken=null,folderCache={};
 
 function initGoogleAuth(){
   if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
@@ -559,18 +561,57 @@ function ensureDriveToken(){
   });
 }
 
-async function backupDbToDrive(){
-  if(!accessToken)throw new Error("No access token.");
-  var rows=dbLoadAll();var jsonText=JSON.stringify(rows,null,2);
-  var docTypeNow=($id("docType")&&$id("docType").value||"Quotation").toLowerCase();
-  var folderId=DRIVE_FOLDER_GLORI;
-  var fileName="glori-"+docTypeNow+"-backup-"+new Date().toISOString().slice(0,19).replace(/:/g,"-")+".json";
+async function getOrCreateSubfolder(name){
+  if(folderCache[name])return folderCache[name];
+  var q=encodeURIComponent("name='"+name+"' and '"+DRIVE_FOLDER_GLORI+"' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  var res=await fetch("https://www.googleapis.com/drive/v3/files?q="+q+"&fields=files(id,name)",{headers:{Authorization:"Bearer "+accessToken}});
+  var data=await res.json();
+  if(data.files&&data.files.length>0){folderCache[name]=data.files[0].id;return folderCache[name];}
+  var create=await fetch("https://www.googleapis.com/drive/v3/files",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify({name:name,mimeType:"application/vnd.google-apps.folder",parents:[DRIVE_FOLDER_GLORI]})});
+  var folder=await create.json();
+  folderCache[name]=folder.id;
+  return folder.id;
+}
+
+async function uploadToDriveFolder(folderName,fileName,content){
+  var folderId=await getOrCreateSubfolder(folderName);
   var boundary="-------314159265358979323846";
   var metadata={name:fileName,mimeType:"application/json",parents:[folderId]};
-  var body="--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(metadata)+"\r\n--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+jsonText+"\r\n--"+boundary+"--";
+  var body="--"+boundary+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(metadata)+"\r\n--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+content+"\r\n--"+boundary+"--";
   var res=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"multipart/related; boundary="+boundary},body:body});
   if(!res.ok)throw new Error(await res.text());
   return true;
+}
+
+async function backupDbToDrive(){
+  if(!accessToken)throw new Error("No access token.");
+  var rows=dbLoadAll();
+  var docType=($id("docType")&&$id("docType").value)||"Quotation";
+  var fileName="glori-"+docType.toLowerCase()+"-"+new Date().toISOString().slice(0,19).replace(/:/g,"-")+".json";
+  await uploadToDriveFolder(docType,fileName,JSON.stringify(rows,null,2));
+  return true;
+}
+
+async function saveDeliveryToDrive(){
+  try{
+    await ensureDriveToken();
+    var data={type:"Delivery",dear:g('d-dear'),qty:g('d-qty'),product:g('d-product'),brand:g('d-brand'),dispatchDate:g('d-dispatchdate'),deliveryDay:g('d-deliveryday'),time:g('d-time'),address:g('d-address'),phone:g('d-phone'),email:g('d-email'),sender:g('d-sender'),position:g('d-position'),company:g('d-company'),sphone:g('d-sphone'),semail:g('d-semail'),savedAt:new Date().toISOString()};
+    var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    var name="delivery-"+(data.dear.slice(0,25).replace(/[^\w]+/g,"-"))+"-"+ts+".json";
+    await uploadToDriveFolder("Delivery",name,JSON.stringify(data,null,2));
+    alert("Delivery letter saved to Google Drive > Delivery folder!");
+  }catch(e){alert("Drive save failed: "+e.message);}
+}
+
+async function saveContractToDrive(){
+  try{
+    await ensureDriveToken();
+    var data={type:"Contract",seller:g('c-seller'),buyer:g('c-buyer'),date:g('c-date'),num:g('c-num'),qty:g('c-qty'),product:g('c-product'),uprice:g('c-uprice'),total:g('c-total'),payment:g('c-payment'),deldate:g('c-deldate'),address:g('c-address'),sender:g('c-sender'),position:g('c-position'),savedAt:new Date().toISOString()};
+    var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    var name="contract-"+(data.num||data.buyer.slice(0,20)).replace(/[^\w]+/g,"-")+"-"+ts+".json";
+    await uploadToDriveFolder("Contract",name,JSON.stringify(data,null,2));
+    alert("Contract saved to Google Drive > Contract folder!");
+  }catch(e){alert("Drive save failed: "+e.message);}
 }
 
 async function exportAllJson(){
