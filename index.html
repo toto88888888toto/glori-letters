@@ -251,9 +251,8 @@
     <div class="field-l"><label>Sender Phone</label><input id="d-sphone" value="+856 20 95577556" oninput="renderDelivery()"/></div>
     <div class="field-l"><label>Sender Email</label><input id="d-semail" value="customer_sv@glori-cre.org" oninput="renderDelivery()"/></div>
     <div class="btn-row">
-      <button class="btn-l btn-primary-l" onclick="window.print()">&#128424; Print</button>
+      <button class="btn-l btn-primary-l" id="deliverySaveBtn" onclick="saveDeliveryPdf()">&#128190; Save</button>
       <button class="btn-l btn-secondary-l" onclick="copyLetter('delivery-preview')">&#128203; Copy</button>
-      <button class="btn-l" style="background:#34a853;color:#fff" onclick="saveDeliveryToDrive()">&#9729; Drive</button>
       <button class="btn-l btn-outline-l" onclick="resetDelivery()">&#8634; Reset</button>
     </div>
   </div>
@@ -282,9 +281,8 @@
     <div class="field-l"><label>Authorized Signatory</label><input id="c-sender" value="TOTO OUTAMAVONGSA Mr." oninput="renderContract()"/></div>
     <div class="field-l"><label>Position</label><input id="c-position" value="CEO" oninput="renderContract()"/></div>
     <div class="btn-row">
-      <button class="btn-l btn-primary-l" onclick="window.print()">&#128424; Print</button>
+      <button class="btn-l btn-primary-l" id="contractSaveBtn" onclick="saveContractPdf()">&#128190; Save</button>
       <button class="btn-l btn-secondary-l" onclick="copyLetter('contract-preview')">&#128203; Copy</button>
-      <button class="btn-l" style="background:#34a853;color:#fff" onclick="saveContractToDrive()">&#9729; Drive</button>
       <button class="btn-l btn-outline-l" onclick="resetContract()">&#8634; Reset</button>
     </div>
   </div>
@@ -744,28 +742,60 @@ async function backupDbToDrive(){
   return true;
 }
 
-async function saveDeliveryToDrive(){
-  try{
-    await ensureDriveToken();
-    var dear=g('d-dear');
-    var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
-    var name="Delivery-"+(dear.slice(0,30).replace(/[^\w]+/g,"-"))+"-"+ts+".pdf";
-    var pdfB64=generateDeliveryPdfBase64();
-    await uploadPdfToDriveFolder("Delivery",name,pdfB64);
-    alert("Delivery letter PDF saved to Google Drive > Delivery folder!");
-  }catch(e){alert("Drive save failed: "+e.message);}
+function downloadPdfBase64(base64,fileName){
+  var link=document.createElement("a");
+  link.href="data:application/pdf;base64,"+base64;
+  link.download=fileName;
+  link.click();
 }
 
-async function saveContractToDrive(){
+function setBtnState(id,loading){
+  var btn=document.getElementById(id);
+  if(!btn)return;
+  if(loading){btn.dataset.orig=btn.innerText;btn.innerText="Saving...";btn.disabled=true;btn.style.opacity="0.7";}
+  else{btn.innerText=btn.dataset.orig||"\uD83D\uDCBE Save";btn.disabled=false;btn.style.opacity="";}
+}
+
+async function saveDeliveryPdf(){
+  setBtnState("deliverySaveBtn",true);
   try{
-    await ensureDriveToken();
-    var num=g('c-num')||g('c-buyer').slice(0,20);
-    var ts=new Date().toISOString().slice(0,19).replace(/:/g,"-");
+    var dear=g('d-dear');
+    var ts=new Date().toISOString().slice(0,10);
+    var name="Delivery-"+(dear.slice(0,30).replace(/[^\w]+/g,"-"))+"-"+ts+".pdf";
+    var pdfB64=generateDeliveryPdfBase64();
+    // 1. Download locally
+    downloadPdfBase64(pdfB64,name);
+    // 2. Save to Drive
+    try{
+      await ensureDriveToken();
+      await uploadPdfToDriveFolder("Delivery",name,pdfB64);
+      alert("\u2705 Saved!\nDownloaded to your computer + uploaded to Google Drive > Delivery folder.");
+    }catch(driveErr){
+      alert("\u2705 PDF downloaded!\n\u26A0\uFE0F Drive upload failed: "+driveErr.message);
+    }
+  }catch(e){alert("Save failed: "+e.message);}
+  finally{setBtnState("deliverySaveBtn",false);}
+}
+
+async function saveContractPdf(){
+  setBtnState("contractSaveBtn",true);
+  try{
+    var num=g('c-num')||g('c-buyer').slice(0,20)||"contract";
+    var ts=new Date().toISOString().slice(0,10);
     var name="Contract-"+num.replace(/[^\w]+/g,"-")+"-"+ts+".pdf";
     var pdfB64=generateContractPdfBase64();
-    await uploadPdfToDriveFolder("Contract",name,pdfB64);
-    alert("Sales Contract PDF saved to Google Drive > Contract folder!");
-  }catch(e){alert("Drive save failed: "+e.message);}
+    // 1. Download locally
+    downloadPdfBase64(pdfB64,name);
+    // 2. Save to Drive
+    try{
+      await ensureDriveToken();
+      await uploadPdfToDriveFolder("Contract",name,pdfB64);
+      alert("\u2705 Saved!\nDownloaded to your computer + uploaded to Google Drive > Contract folder.");
+    }catch(driveErr){
+      alert("\u2705 PDF downloaded!\n\u26A0\uFE0F Drive upload failed: "+driveErr.message);
+    }
+  }catch(e){alert("Save failed: "+e.message);}
+  finally{setBtnState("contractSaveBtn",false);}
 }
 
 async function exportAllJson(){
