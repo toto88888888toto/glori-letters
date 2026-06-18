@@ -6,17 +6,17 @@
   <title>Glori Document</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Noto Sans Lao','Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+    body{font-family:'Poppins','Noto Sans Lao',sans-serif;background:#f0f2f5;min-height:100vh}
     header{background:#1a1a2e;color:#fff;padding:14px 28px;display:flex;align-items:center;gap:16px}
-    header h1{font-size:1.2rem;font-weight:600;font-family:sans-serif}
+    header h1{font-size:1.2rem;font-weight:600;font-family:'Poppins',sans-serif}
     header span{font-size:0.8rem;color:#aaa}
     .tabs{background:#16213e;display:flex;padding:0 28px;overflow-x:auto}
-    .tab-btn{padding:11px 22px;color:#aaa;cursor:pointer;border:none;background:none;font-size:0.9rem;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;font-family:sans-serif}
+    .tab-btn{padding:11px 22px;color:#aaa;cursor:pointer;border:none;background:none;font-size:0.9rem;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;font-family:'Poppins',sans-serif}
     .tab-btn.active{color:#fff;border-bottom-color:#e94560}
     .tab-btn:hover:not(.active){color:#ddd}
 
@@ -24,23 +24,23 @@
     .letter-page{display:none;grid-template-columns:360px 1fr;height:calc(100vh - 94px)}
     .letter-page.active{display:grid}
     .form-panel{background:#fff;border-right:1px solid #e0e0e0;overflow-y:auto;padding:24px 20px}
-    .form-panel h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px;font-family:sans-serif}
+    .form-panel h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px;font-family:'Poppins',sans-serif}
     .field-l{margin-bottom:14px}
-    .field-l label{display:block;font-size:.78rem;font-weight:600;color:#444;margin-bottom:4px;font-family:sans-serif}
-    .field-l input,.field-l textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;color:#222;transition:border .15s;background:#fafafa;font-family:sans-serif}
+    .field-l label{display:block;font-size:.78rem;font-weight:600;color:#444;margin-bottom:4px;font-family:'Poppins',sans-serif}
+    .field-l input,.field-l textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;color:#222;transition:border .15s;background:#fafafa;font-family:'Poppins',sans-serif}
     .field-l input:focus,.field-l textarea:focus{outline:none;border-color:#e94560;background:#fff}
     .field-l textarea{resize:vertical;min-height:62px}
-    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#e94560;font-weight:700;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #f0e0e3;font-family:sans-serif}
+    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#e94560;font-weight:700;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #f0e0e3;font-family:'Poppins',sans-serif}
     .btn-row{display:flex;gap:8px;margin-top:20px}
-    .btn-l{flex:1;padding:10px;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s;font-family:sans-serif}
+    .btn-l{flex:1;padding:10px;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s;font-family:'Poppins',sans-serif}
     .btn-l:hover{opacity:.85}
     .btn-primary-l{background:#e94560;color:#fff}
     .btn-secondary-l{background:#1a1a2e;color:#fff}
     .btn-outline-l{background:#f0f0f0;color:#333}
     .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
-    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Times New Roman',Times,serif;font-size:12.5pt;line-height:1.65;color:#111;min-height:1050px}
+    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12.5pt;line-height:1.65;color:#111;min-height:1050px}
     .letter-logo{text-align:center;margin-bottom:32px}
-    .logo-text{font-family:'Georgia',serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
+    .logo-text{font-family:'Poppins',sans-serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
     .letter-body p{margin-bottom:14px}
     .receipt-line{text-align:right;margin-bottom:60px;font-style:italic}
     .sig-name{font-weight:bold}
@@ -51,7 +51,7 @@
     .wrap{max-width:980px;margin:26px auto;padding:18px}
     .card{background:#fff;border:1px solid rgba(17,24,39,.10);border-radius:26px;padding:26px;margin-bottom:16px;box-shadow:0 22px 44px rgba(2,8,23,.10);position:relative}
     .card h2{margin:0 0 18px;font-size:24px;font-weight:800;color:rgba(17,24,39,.75)}
-    .qi-page input:not(.adv-inner),.qi-page select,.qi-page textarea{width:100%;padding:12px 14px;border-radius:16px;border:1px solid rgba(17,24,39,.12);background:#fbfbfd;color:rgba(17,24,39,.88);outline:none;transition:box-shadow .15s,border-color .15s;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .qi-page input:not(.adv-inner),.qi-page select,.qi-page textarea{width:100%;padding:12px 14px;border-radius:16px;border:1px solid rgba(17,24,39,.12);background:#fbfbfd;color:rgba(17,24,39,.88);outline:none;transition:box-shadow .15s,border-color .15s;font-family:'Poppins','Noto Sans Lao',sans-serif}
     .qi-page input:not(.adv-inner):focus,.qi-page select:focus,.qi-page textarea:focus{border-color:rgba(122,166,255,.7);box-shadow:0 0 0 4px rgba(122,166,255,.22)}
     .qi-page input:not(.adv-inner){height:48px}
     .qi-page input[type=date]{padding-top:10px;padding-bottom:10px}
@@ -62,11 +62,11 @@
     .grid+.grid{margin-top:14px}
     .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
     .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .btn,.btn2{cursor:pointer;border-radius:999px;padding:12px 18px;font-weight:800;border:1px solid rgba(17,24,39,.14);background:#fff;color:rgba(17,24,39,.85);font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .btn,.btn2{cursor:pointer;border-radius:999px;padding:12px 18px;font-weight:800;border:1px solid rgba(17,24,39,.14);background:#fff;color:rgba(17,24,39,.85);font-family:'Poppins','Noto Sans Lao',sans-serif}
     .btn{background:linear-gradient(90deg,#b7c8ff,#7aa6ff);border-color:rgba(122,166,255,.45)}
     .btn:hover,.btn2:hover{box-shadow:0 10px 22px rgba(2,8,23,.12)}
     .btn2.small{padding:10px 14px;font-size:12px;font-weight:900}
-    #addBtn{position:absolute;top:22px;right:22px;padding:12px 20px;background:linear-gradient(90deg,#b7c8ff,#7aa6ff);border-radius:999px;border:1px solid rgba(122,166,255,.45);font-weight:900;color:#111827;box-shadow:0 12px 26px rgba(2,8,23,.15);cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    #addBtn{position:absolute;top:22px;right:22px;padding:12px 20px;background:linear-gradient(90deg,#b7c8ff,#7aa6ff);border-radius:999px;border:1px solid rgba(122,166,255,.45);font-weight:900;color:#111827;box-shadow:0 12px 26px rgba(2,8,23,.15);cursor:pointer;font-family:'Poppins','Noto Sans Lao',sans-serif}
     .card:has(#addBtn) h2{padding-right:180px}
     #itemsList{margin-top:10px}
     .item-card{border-radius:18px;background:#fff;border:1px solid rgba(17,24,39,.10);box-shadow:0 16px 34px rgba(2,8,23,.08);padding:22px;margin-bottom:16px}
@@ -79,7 +79,7 @@
     .photo-box{height:160px;border-radius:16px;border:2px dashed rgba(17,24,39,.18);display:flex;align-items:center;justify-content:center;color:rgba(17,24,39,.45);font-weight:700;background:rgba(255,255,255,.55);overflow:hidden}
     .photo-box.has-img{border-style:solid}
     .photo-box img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block}
-    .photo-btn{cursor:pointer;height:46px;border-radius:14px;border:1px solid rgba(17,24,39,.16);background:#fff;font-weight:900;color:rgba(17,24,39,.85);width:100%;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .photo-btn{cursor:pointer;height:46px;border-radius:14px;border:1px solid rgba(17,24,39,.16);background:#fff;font-weight:900;color:rgba(17,24,39,.85);width:100%;font-family:'Poppins','Noto Sans Lao',sans-serif}
     .photo-btn:hover{box-shadow:0 10px 22px rgba(2,8,23,.12)}
     .item-right{display:flex;flex-direction:column;gap:12px}
     .item-detail{min-height:105px}
@@ -95,12 +95,12 @@
     .advance-input{flex:1;height:52px;display:flex;align-items:center;justify-content:center;gap:10px;background:#fbfbfd;border:1px solid rgba(17,24,39,.12);border-radius:999px;padding:0 16px;min-width:0}
     .adv-inner{width:90px!important;text-align:center;font-weight:900;font-size:18px;border:none!important;background:transparent!important;outline:none!important;box-shadow:none!important;height:40px!important;padding:0!important;border-radius:0!important}
     .advance-input span{font-weight:900;color:rgba(17,24,39,.65)}
-    .vat-pill{height:52px;padding:0 18px;border-radius:999px;font-weight:900;white-space:nowrap;background:rgba(122,166,255,.14);border:1px solid rgba(122,166,255,.32);cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .vat-pill{height:52px;padding:0 18px;border-radius:999px;font-weight:900;white-space:nowrap;background:rgba(122,166,255,.14);border:1px solid rgba(122,166,255,.32);cursor:pointer;font-family:'Poppins','Noto Sans Lao',sans-serif}
     .advance-hint{text-align:center;font-size:12px;color:rgba(17,24,39,.55)}
     .saved-row{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px;border-radius:18px;border:1px solid rgba(17,24,39,.12);margin-bottom:10px}
     .saved-row .row-title{font-weight:900}
     .saved-row .row-meta{font-size:12px;color:rgba(17,24,39,.55)}
-    .smallbtn{border-radius:999px;padding:10px 14px;border:1px solid rgba(17,24,39,.14);background:#fff;font-weight:800;cursor:pointer;font-family:'Noto Sans Lao','Segoe UI',sans-serif}
+    .smallbtn{border-radius:999px;padding:10px 14px;border:1px solid rgba(17,24,39,.14);background:#fff;font-weight:800;cursor:pointer;font-family:'Poppins','Noto Sans Lao',sans-serif}
     .muted{color:rgba(17,24,39,.55);font-size:12px}
 
     @media(max-width:850px){
@@ -179,7 +179,7 @@
       <button class="btn-l btn-outline-l" id="exportBtn">Export</button>
     </div>
     <div id="savedCard" style="display:none;margin-top:16px;border:1px solid #eee;border-radius:10px;padding:16px">
-      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:10px;font-weight:700;font-family:sans-serif">Saved Documents</div>
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:10px;font-weight:700;font-family:'Poppins',sans-serif">Saved Documents</div>
       <div id="savedList"></div>
       <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
         <button class="btn-l btn-outline-l" id="closeSavedBtn" style="flex:0 0 auto;padding:7px 14px">Close</button>
@@ -852,7 +852,7 @@ function renderQI(){
   previewEl.innerHTML=
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">'+
       '<div>'+logoHTML+'</div>'+
-      '<div style="text-align:right"><div style="font-size:2.6rem;font-weight:800;color:#333;letter-spacing:.02em;font-family:sans-serif">'+docType.toUpperCase()+'</div></div>'+
+      '<div style="text-align:right"><div style="font-size:2.6rem;font-weight:800;color:#333;letter-spacing:.02em;font-family:"Poppins",sans-serif">'+docType.toUpperCase()+'</div></div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px">'+
       '<div>'+
@@ -878,7 +878,7 @@ function renderQI(){
       '<table style="border-collapse:collapse"><tbody>'+totalsHTML+'</tbody></table>'+
     '</div>'+
     bankHTML+
-    '<div style="margin-top:28px;padding-top:10px;border-top:1px solid #eee;font-size:.78rem;color:#bbb;font-family:sans-serif">'+COMPANY_NAME+' — Generated '+new Date().toLocaleDateString()+'</div>';
+    '<div style="margin-top:28px;padding-top:10px;border-top:1px solid #eee;font-size:.78rem;color:#bbb;font-family:Poppins,sans-serif">'+COMPANY_NAME+' — Generated '+new Date().toLocaleDateString()+'</div>';
 }
 
 /* === LETTER SECTION === */
