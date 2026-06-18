@@ -487,7 +487,11 @@ async function saveLocal(){
   try{
     if(editingDocId){dbUpdate(editingDocId,payload);editingDocId=null;$id("saveBtn").textContent="Save & PDF";}
     else{dbAdd(payload);}
-    renderSavedList();generatePdf(payload);alert("Saved and PDF generated!");
+    renderSavedList();
+    generatePdf(payload);
+    // Try Drive backup silently
+    try{await ensureDriveToken();await backupDbToDrive();alert("Saved, PDF generated, and backed up to Google Drive!");}
+    catch(e){alert("Saved and PDF generated! (Drive backup: "+e.message+")");}
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
 }
@@ -523,9 +527,57 @@ function renderSavedList(){
   });
 }
 
-function exportAllJson(){
+/* === GOOGLE DRIVE BACKUP === */
+var GOOGLE_CLIENT_ID="811125615229-r9i81g6drdrg6fq7o68fp1s02h13r5uu.apps.googleusercontent.com";
+var DRIVE_FOLDER_GLORI="1dYuaj9xbrO6JCpbkVk7cX96aPv8RvB2k";
+var tokenClient=null,accessToken=null;
+
+function initGoogleAuth(){
+  if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
+  if(tokenClient)return true;
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(){}});
+  return true;
+}
+
+function ensureDriveToken(){
+  return new Promise(function(resolve,reject){
+    if(!initGoogleAuth())return reject(new Error("Google Identity Services not ready. Try again in a moment."));
+    if(accessToken)return resolve(accessToken);
+    tokenClient.callback=function(resp){if(!resp||!resp.access_token)return reject(new Error("No access token returned."));accessToken=resp.access_token;resolve(accessToken);};
+    tokenClient.requestAccessToken({prompt:""});
+  });
+}
+
+async function backupDbToDrive(){
+  if(!accessToken)throw new Error("No access token.");
+  var rows=dbLoadAll();var jsonText=JSON.stringify(rows,null,2);
+  var docTypeNow=($id("docType")&&$id("docType").value||"Quotation").toLowerCase();
+  var folderId=DRIVE_FOLDER_GLORI;
+  var fileName="glori-"+docTypeNow+"-backup-"+new Date().toISOString().slice(0,19).replace(/:/g,"-")+".json";
+  var boundary="-------314159265358979323846";
+  var metadata={name:fileName,mimeType:"application/json",parents:[folderId]};
+  var body="--"+boundary+"
+Content-Type: application/json; charset=UTF-8
+
+"+JSON.stringify(metadata)+"
+--"+boundary+"
+Content-Type: application/json
+
+"+jsonText+"
+--"+boundary+"--";
+  var res=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",{method:"POST",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"multipart/related; boundary="+boundary},body:body});
+  if(!res.ok)throw new Error(await res.text());
+  return true;
+}
+
+async function exportAllJson(){
   var rows=dbLoadAll();var blob=new Blob([JSON.stringify(rows,null,2)],{type:"application/json"});
   var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="glori-doc-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
+  try{
+    await ensureDriveToken();
+    await backupDbToDrive();
+    alert("Exported + Drive Backup done!");
+  }catch(err){alert("Exported locally. Drive backup failed: "+(err.message||err));}
 }
 
 /* === LETTER SECTION === */
@@ -611,6 +663,8 @@ window.addEventListener("load",async function(){
   addItem();
   renderDelivery();
   renderContract();
+  // Init Google Auth when GIS loads
+  var tries=0;var gisTimer=setInterval(function(){tries++;if(initGoogleAuth()||tries>=20)clearInterval(gisTimer);},500);
 });
 </script>
 </body>
