@@ -13,10 +13,10 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Noto Sans Lao','Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
     header{background:#1a1a2e;color:#fff;padding:14px 28px;display:flex;align-items:center;gap:16px}
-    header h1{font-size:1.2rem;font-weight:600;font-family:'Segoe UI',sans-serif}
+    header h1{font-size:1.2rem;font-weight:600;font-family:sans-serif}
     header span{font-size:0.8rem;color:#aaa}
     .tabs{background:#16213e;display:flex;padding:0 28px;overflow-x:auto}
-    .tab-btn{padding:11px 22px;color:#aaa;cursor:pointer;border:none;background:none;font-size:0.9rem;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;font-family:'Segoe UI',sans-serif}
+    .tab-btn{padding:11px 22px;color:#aaa;cursor:pointer;border:none;background:none;font-size:0.9rem;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;font-family:sans-serif}
     .tab-btn.active{color:#fff;border-bottom-color:#e94560}
     .tab-btn:hover:not(.active){color:#ddd}
 
@@ -24,15 +24,15 @@
     .letter-page{display:none;grid-template-columns:360px 1fr;height:calc(100vh - 94px)}
     .letter-page.active{display:grid}
     .form-panel{background:#fff;border-right:1px solid #e0e0e0;overflow-y:auto;padding:24px 20px}
-    .form-panel h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px;font-family:'Segoe UI',sans-serif}
+    .form-panel h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px;font-family:sans-serif}
     .field-l{margin-bottom:14px}
-    .field-l label{display:block;font-size:.78rem;font-weight:600;color:#444;margin-bottom:4px;font-family:'Segoe UI',sans-serif}
-    .field-l input,.field-l textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;color:#222;transition:border .15s;background:#fafafa;font-family:'Segoe UI',sans-serif}
+    .field-l label{display:block;font-size:.78rem;font-weight:600;color:#444;margin-bottom:4px;font-family:sans-serif}
+    .field-l input,.field-l textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;color:#222;transition:border .15s;background:#fafafa;font-family:sans-serif}
     .field-l input:focus,.field-l textarea:focus{outline:none;border-color:#e94560;background:#fff}
     .field-l textarea{resize:vertical;min-height:62px}
-    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#e94560;font-weight:700;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #f0e0e3;font-family:'Segoe UI',sans-serif}
+    .section-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#e94560;font-weight:700;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #f0e0e3;font-family:sans-serif}
     .btn-row{display:flex;gap:8px;margin-top:20px}
-    .btn-l{flex:1;padding:10px;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s;font-family:'Segoe UI',sans-serif}
+    .btn-l{flex:1;padding:10px;border:none;border-radius:7px;cursor:pointer;font-size:.85rem;font-weight:600;transition:opacity .2s;font-family:sans-serif}
     .btn-l:hover{opacity:.85}
     .btn-primary-l{background:#e94560;color:#fff}
     .btn-secondary-l{background:#1a1a2e;color:#fff}
@@ -136,92 +136,58 @@
 </div>
 
 <!-- QUOTATION / INVOICE PAGE -->
-<div class="qi-page active" id="page-qinv">
-  <div class="wrap">
-    <div class="card">
-      <h2>Document Details</h2>
-      <div class="grid g3">
-        <div class="field"><label>Document Type</label>
-          <select id="docType"><option value="Quotation">Quotation</option><option value="Invoice">Invoice</option></select></div>
-        <div class="field"><label>Document No</label><input id="docNo"></div>
-        <div class="field"><label>Date</label><input id="docDate" type="date"></div>
-      </div>
-      <div class="grid g2" style="margin-top:14px">
-        <div class="field"><label>Project</label><input id="project"></div>
-        <div class="field"><label>Currency</label>
-          <select id="currency"><option value="LAK">LAK</option><option value="USD">USD</option><option value="THB">THB</option></select></div>
-      </div>
+<div class="letter-page" id="page-qinv">
+  <div class="form-panel">
+    <h2>Fill in Details</h2>
+    <div class="section-title">Document</div>
+    <div class="field-l"><label>Type</label>
+      <select id="docType" onchange="document.getElementById('docNo').value=generateNextDocNo(this.value);renderQI()" style="width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;background:#fafafa">
+        <option value="Quotation">Quotation</option><option value="Invoice">Invoice</option></select></div>
+    <div class="field-l"><label>Doc No</label><input id="docNo" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Date</label><input id="docDate" type="date" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Project</label><input id="project" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Currency</label>
+      <select id="currency" onchange="renderQI()" style="width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;background:#fafafa">
+        <option value="LAK">LAK</option><option value="USD">USD</option><option value="THB">THB</option></select></div>
+    <div class="section-title">Customer</div>
+    <div class="field-l"><label>&#3714;&#3765;&#3756;&#3749;&#3749;&#3713;&#3785;&#3736;&#3714;&#3762; / Customer</label><input id="customerName" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Attention</label><input id="attentionTo" oninput="renderQI()"/></div>
+    <div class="field-l"><label>&#3733;&#3765;&#3738;&#3762;&#3718;&#3718; / Address</label><textarea id="address" oninput="renderQI()"></textarea></div>
+    <div class="field-l"><label>&#3776;&#3738;&#3765;&#3740;&#3762;&#3737; / Contact</label><textarea id="contact" oninput="renderQI()"></textarea></div>
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+      Items
+      <button id="addBtn" style="background:#e94560;color:#fff;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:.78rem;font-weight:700">+ Add</button>
     </div>
-
-    <div class="card">
-      <h2>Customer</h2>
-      <div class="grid g2">
-        <div class="field"><label>&#3714;&#3765;&#3756;&#3749;&#3749;&#3713;&#3785;&#3736;&#3714;&#3762; / Customer</label><input id="customerName"></div>
-        <div class="field"><label>Attention</label><input id="attentionTo"></div>
-      </div>
-      <div class="grid g2" style="margin-top:14px">
-        <div class="field"><label>&#3733;&#3765;&#3738;&#3762;&#3718;&#3718; / Address</label><textarea id="address"></textarea></div>
-        <div class="field"><label>&#3776;&#3738;&#3765;&#3740;&#3762;&#3737; / Contact</label><textarea id="contact"></textarea></div>
-      </div>
+    <div id="itemsList"></div>
+    <div class="section-title">Summary</div>
+    <div class="field-l"><label>Discount</label><input id="discount" type="number" value="0" min="0" oninput="recalc()"/></div>
+    <div class="field-l"><label>Advance %</label><input id="advancePercent" type="number" value="0" min="0" max="100" step="0.01" oninput="recalc()"/></div>
+    <div style="margin:8px 0"><button id="vatBtn" class="btn-l btn-outline-l" style="width:100%;padding:8px" type="button">VAT: OFF</button></div>
+    <div style="background:#f5f5f5;border-radius:8px;padding:12px;margin:8px 0;font-size:.85rem;line-height:1.8">
+      <div id="subtotalDisplay">Subtotal: 0</div>
+      <div id="totalDisplay">Total: 0</div>
+      <div id="advanceDisplay">Advance: 0</div>
+      <div id="balanceDisplay" style="font-weight:800;color:#1a1a2e">Balance Due: 0</div>
     </div>
-
-    <div class="card">
-      <h2>Bank Details</h2>
-      <div class="grid g3">
-        <div class="field"><label>Bank Name</label><input id="bankName" placeholder="e.g. BCEL / ACLEDA / etc."></div>
-        <div class="field"><label>Account Name</label><input id="accountName" placeholder="e.g. Glori Creativity Sole Co.,Ltd"></div>
-        <div class="field"><label>Account Number</label><input id="accountNumber" placeholder="e.g. 010-xxx-xxxxxxx"></div>
-      </div>
-      <div class="muted" style="margin-top:10px">This will appear in PDF bottom-left (above footer).</div>
+    <div class="section-title">Bank Details</div>
+    <div class="field-l"><label>Bank Name</label><input id="bankName" placeholder="e.g. BCEL / ACLEDA" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Account Name</label><input id="accountName" placeholder="e.g. Glori Creativity Sole Co.,Ltd" oninput="renderQI()"/></div>
+    <div class="field-l"><label>Account Number</label><input id="accountNumber" placeholder="e.g. 010-xxx-xxxxxxx" oninput="renderQI()"/></div>
+    <div class="btn-row">
+      <button class="btn-l btn-primary-l" id="saveBtn">&#128190; Save</button>
+      <button class="btn-l btn-secondary-l" id="viewBtn">Saved</button>
+      <button class="btn-l btn-outline-l" id="exportBtn">Export</button>
     </div>
-
-    <div class="card">
-      <h2>Items</h2>
-      <button class="btn2" type="button" id="addBtn">+ Add Item</button>
-      <div id="itemsList"></div>
-    </div>
-
-    <div class="card">
-      <h2>Summary</h2>
-      <div class="summary-grid">
-        <div class="field summary-block"><label>Discount</label><input id="discount" type="number" value="0" min="0"></div>
-        <div class="summary-block advance-card">
-          <div class="advance-title">ADVANCE PAYMENT</div>
-          <div class="advance-controls">
-            <div class="advance-input">
-              <input class="adv-inner" id="advancePercent" type="number" value="0" min="0" max="100" step="0.01">
-              <span>%</span>
-            </div>
-            <button id="vatBtn" class="vat-pill" type="button">VAT: OFF</button>
-          </div>
-          <div class="advance-hint">Advance is % of Total</div>
-        </div>
-        <div class="amt-display summary-block">
-          <div id="subtotalDisplay">Subtotal: 0</div>
-          <div id="totalDisplay">Total: 0</div>
-          <div id="advanceDisplay">Advance: 0</div>
-          <div id="balanceDisplay" class="balance">Balance Due: 0</div>
-        </div>
-      </div>
-      <div class="muted" style="margin-top:10px">VAT uses 10% only when ON (based on Subtotal - Discount)</div>
-    </div>
-
-    <div class="card" style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="btn2" id="viewBtn">View Saved</button>
-      <button class="btn2" id="exportBtn">Export JSON</button>
-      <button class="btn" id="saveBtn">Save &amp; PDF</button>
-    </div>
-
-    <div class="card" id="savedCard" style="display:none">
-      <h2>Saved Documents</h2>
-      <div class="muted" style="margin-bottom:10px">Saved in this browser (LocalStorage)</div>
+    <div id="savedCard" style="display:none;margin-top:16px;border:1px solid #eee;border-radius:10px;padding:16px">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:10px;font-weight:700;font-family:sans-serif">Saved Documents</div>
       <div id="savedList"></div>
-      <div style="margin-top:12px;display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn2" id="closeSavedBtn">Close</button>
-        <button class="btn2" id="clearAllBtn">Clear All</button>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-l btn-outline-l" id="closeSavedBtn" style="flex:0 0 auto;padding:7px 14px">Close</button>
+        <button class="btn-l btn-outline-l" id="clearAllBtn" style="flex:0 0 auto;padding:7px 14px;color:#e94560">Clear All</button>
       </div>
     </div>
   </div>
+  <div class="preview-panel"><div class="letter" id="qi-preview"></div></div>
 </div>
 
 <!-- DELIVERY LETTER -->
@@ -306,10 +272,11 @@ function switchTab(name){
   // Show the right page
   if(name==='quotation'||name==='invoice'){
     var el=document.getElementById('page-qinv');
-    if(el) el.style.display='block';
+    if(el) el.style.display='grid';
     var newType=name==='quotation'?'Quotation':'Invoice';
     var dtEl=document.getElementById('docType');
     if(dtEl&&dtEl.value!==newType){dtEl.value=newType;document.getElementById('docNo').value=generateNextDocNo(newType);}
+    renderQI();
   }else if(name==='delivery'){
     var el=document.getElementById('page-delivery');
     if(el) el.style.display='grid';
@@ -388,22 +355,41 @@ async function compressImageToDataURL(file,maxW,maxH,quality){
 function addItem(prefill){
   prefill=prefill||{};itemCount++;
   var d=document.createElement("div");d.className="item-card";d.dataset.idx=String(itemCount);
-  d.innerHTML='<div class="item-head"><div class="item-no">'+itemCount+'</div><div class="item-actions"><button class="btn2 small" type="button" data-action="add">+ Add Item</button><button class="btn2" type="button" data-action="remove">Remove</button></div></div><div class="item-body"><div class="item-photo"><div class="photo-box">No Image</div><button type="button" class="photo-btn">Upload Photo</button></div><div class="item-right"><textarea class="item-detail" placeholder="Description"></textarea><div class="item-fields"><input class="item-qty" type="number" value="1" min="0"><input class="item-price" type="number" value="0" min="0"></div></div></div>';
+  d.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+      '<div class="item-no" style="width:28px;height:28px;border-radius:50%;background:#e94560;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem">'+itemCount+'</div>'+
+      '<div style="display:flex;gap:6px">'+
+        '<button class="btn2 small" type="button" data-action="add" style="padding:4px 8px;font-size:.75rem">+</button>'+
+        '<button class="btn2" type="button" data-action="remove" style="padding:4px 8px;font-size:.75rem;color:#e94560">✕</button>'+
+      '</div>'+
+    '</div>'+
+    '<textarea class="item-detail" placeholder="Product description..." style="width:100%;padding:8px;border:1px solid #d0d0d0;border-radius:6px;font-size:.82rem;resize:vertical;min-height:56px;margin-bottom:8px;font-family:inherit"></textarea>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'+
+      '<div><label style="font-size:.72rem;font-weight:700;color:#888;display:block;margin-bottom:3px">Qty</label>'+
+        '<input class="item-qty" type="number" value="1" min="0" style="width:100%;padding:7px 8px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem"/></div>'+
+      '<div><label style="font-size:.72rem;font-weight:700;color:#888;display:block;margin-bottom:3px">Unit Price</label>'+
+        '<input class="item-price" type="number" value="0" min="0" style="width:100%;padding:7px 8px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem"/></div>'+
+    '</div>'+
+    '<div style="display:flex;align-items:center;gap:8px">'+
+      '<div class="photo-box" style="width:44px;height:44px;border-radius:8px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#aaa;overflow:hidden;flex-shrink:0">No img</div>'+
+      '<button type="button" class="photo-btn" style="flex:1;padding:7px;border:1px solid #d0d0d0;border-radius:6px;background:#fafafa;font-size:.78rem;cursor:pointer;font-family:inherit">&#128247; Photo</button>'+
+    '</div>';
+  d.style.cssText='border:1px solid #e8e8e8;border-radius:10px;padding:14px;margin-bottom:12px;background:#fff';
   $id("itemsList").appendChild(d);
   var fileInput=document.createElement("input");fileInput.type="file";fileInput.accept="image/*";fileInput.style.display="none";d.appendChild(fileInput);
   d.querySelector(".item-detail").value=prefill.detail||"";
   d.querySelector(".item-qty").value=prefill.qty!=null?prefill.qty:1;
   d.querySelector(".item-price").value=prefill.unitPrice!=null?prefill.unitPrice:0;
-  if(prefill.photo){d.dataset.photo=prefill.photo;var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+prefill.photo+'" alt="photo"/>';box.classList.add("has-img");}
-  d.querySelector(".item-detail").addEventListener("input",recalc);
-  d.querySelector(".item-qty").addEventListener("input",recalc);
-  d.querySelector(".item-price").addEventListener("input",recalc);
-  d.querySelector('[data-action="remove"]').addEventListener("click",function(){d.remove();renumberItems();recalc();});
-  d.querySelector('[data-action="add"]').addEventListener("click",function(){addItem();renumberItems();});
+  if(prefill.photo){d.dataset.photo=prefill.photo;var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+prefill.photo+'" alt="photo" style="width:100%;height:100%;object-fit:cover"/>';}
+  d.querySelector(".item-detail").addEventListener("input",function(){recalc();renderQI();});
+  d.querySelector(".item-qty").addEventListener("input",function(){recalc();renderQI();});
+  d.querySelector(".item-price").addEventListener("input",function(){recalc();renderQI();});
+  d.querySelector('[data-action="remove"]').addEventListener("click",function(){d.remove();renumberItems();recalc();renderQI();});
+  d.querySelector('[data-action="add"]').addEventListener("click",function(){addItem();renumberItems();renderQI();});
   d.querySelector(".photo-btn").addEventListener("click",function(){fileInput.click();});
   fileInput.addEventListener("change",async function(){
     var file=fileInput.files&&fileInput.files[0];if(!file)return;
-    try{var dataUrl=await compressImageToDataURL(file,600,600,0.60);var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+dataUrl+'" alt="photo"/>';box.classList.add("has-img");d.dataset.photo=dataUrl;recalc();}catch(e){alert("Image upload failed");}
+    try{var dataUrl=await compressImageToDataURL(file,600,600,0.60);var box=d.querySelector(".photo-box");box.innerHTML='<img src="'+dataUrl+'" alt="photo" style="width:100%;height:100%;object-fit:cover"/>';d.dataset.photo=dataUrl;recalc();renderQI();}catch(e){alert("Image upload failed");}
   });
   recalc();
 }
@@ -411,7 +397,7 @@ function addItem(prefill){
 function clearItems(){$id("itemsList").innerHTML="";itemCount=0;}
 function renumberItems(){var cards=Array.from(document.querySelectorAll(".item-card"));cards.forEach(function(card,idx){var no=card.querySelector(".item-no");if(no)no.textContent=String(idx+1);card.dataset.idx=String(idx+1);});itemCount=cards.length;}
 
-function toggleVat(){vatEnabled=!vatEnabled;$id("vatBtn").innerText=vatEnabled?"VAT: ON (10%)":"VAT: OFF";recalc();}
+function toggleVat(){vatEnabled=!vatEnabled;$id("vatBtn").innerText=vatEnabled?"VAT: ON (10%)":"VAT: OFF";recalc();renderQI();}
 
 function recalc(){
   var subtotal=0;
@@ -419,6 +405,7 @@ function recalc(){
   var discount=Number($id("discount").value||0);var net=Math.max(0,subtotal-discount);var vat=vatEnabled?net*0.1:0;var total=net+vat;
   var advPct=Math.max(0,Math.min(100,Number($id("advancePercent").value||0)));var advance=total*(advPct/100);var balance=Math.max(0,total-advance);
   $id("subtotalDisplay").innerText="Subtotal: "+fmt(subtotal);$id("totalDisplay").innerText="Total: "+fmt(total);$id("advanceDisplay").innerText="Advance: "+fmt(advance);$id("balanceDisplay").innerText="Balance Due: "+fmt(balance);
+  renderQI();
 }
 
 function buildPayload(){
@@ -486,7 +473,9 @@ function generatePdf(payload){
   doc.setFontSize(9);setFontSafe("normal");doc.setTextColor.apply(doc,mid);
   doc.text(doc.splitTextToSize(FOOTER_CONTACT.join("\n"),92),W-R,footerY-18,{align:"right"});
   doc.text(COMPANY_NAME,L,footerY);doc.text("Generated: "+new Date().toString(),L,footerY+5);
-  doc.save((payload.docType||"Doc")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf");
+  var _pdfName=(payload.docType||"Doc")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf";
+  doc.save(_pdfName);
+  return {base64:doc.output("datauristring").split(",")[1],name:_pdfName};
 }
 
 function setGenerating(isOn){var btn=$id("saveBtn");if(!btn)return;if(isOn){btn.dataset.oldText=btn.innerText;btn.innerText="Generating...";btn.disabled=true;btn.style.opacity="0.75";}else{btn.innerText=btn.dataset.oldText||"Save & PDF";btn.disabled=false;btn.style.opacity="";}}
@@ -500,10 +489,14 @@ async function saveLocal(){
     if(editingDocId){dbUpdate(editingDocId,payload);editingDocId=null;$id("saveBtn").textContent="Save & PDF";}
     else{dbAdd(payload);}
     renderSavedList();
-    generatePdf(payload);
-    // Try Drive backup silently
-    try{await ensureDriveToken();await backupDbToDrive();alert("Saved, PDF generated, and backed up to Google Drive!");}
-    catch(e){alert("Saved and PDF generated! (Drive backup: "+e.message+")");}
+    var pdfResult=generatePdf(payload);
+    // Upload PDF to Drive
+    try{
+      await ensureDriveToken();
+      var docType=(payload.docType||"Quotation");
+      await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);
+      alert("\u2705 Saved!\nPDF downloaded + uploaded to Google Drive > "+docType+" folder.");
+    }catch(e){alert("\u2705 PDF downloaded!\n\u26A0\uFE0F Drive upload failed: "+e.message);}
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
 }
@@ -808,6 +801,86 @@ async function exportAllJson(){
   }catch(err){alert("Exported locally. Drive backup failed: "+(err.message||err));}
 }
 
+/* === QI LIVE PREVIEW === */
+function renderQI(){
+  var previewEl=document.getElementById('qi-preview');
+  if(!previewEl)return;
+  var docType=g('docType')||'Quotation';
+  var docNo=g('docNo')||'—';
+  var docDate=g('docDate')||'—';
+  var project=g('project')||'';
+  var currency=g('currency')||'LAK';
+  var customerName=g('customerName')||'—';
+  var attentionTo=g('attentionTo')||'';
+  var address=g('address')||'';
+  var contact=g('contact')||'';
+  var bankName=g('bankName')||'';
+  var accountName=g('accountName')||'';
+  var accountNumber=g('accountNumber')||'';
+  var items=[];
+  document.querySelectorAll('.item-card').forEach(function(card){
+    items.push({detail:card.querySelector('.item-detail').value||'',qty:Number(card.querySelector('.item-qty').value||0),price:Number(card.querySelector('.item-price').value||0),photo:card.dataset.photo||''});
+  });
+  var subtotal=0;items.forEach(function(it){subtotal+=it.qty*it.price;});
+  var discount=Number(g('discount')||0);var net=Math.max(0,subtotal-discount);var vat=vatEnabled?net*0.1:0;var total=net+vat;
+  var advPct=Math.max(0,Math.min(100,Number(g('advancePercent')||0)));var advance=total*(advPct/100);var balance=Math.max(0,total-advance);
+  var isLak=currency==='LAK';
+  var nf=new Intl.NumberFormat('en-US',{minimumFractionDigits:isLak?0:2,maximumFractionDigits:isLak?0:2});
+  function mn(n){return nf.format(Number(n)||0);}
+  var logoHTML=LOGO_DATAURL?('<img src="'+LOGO_DATAURL+'" style="max-height:54px;max-width:110px;object-fit:contain"/>'):'<img src="LOGO/New-logo.png" style="max-height:54px;max-width:110px;object-fit:contain"/>';
+  var metaHTML=[
+    [(docType==='Invoice'?'Invoice No':'Quotation No'),docNo],
+    [(docType==='Invoice'?'Invoice Date':'Quotation Date'),docDate],
+    project?['Project',project]:null,
+    ['Currency',currency]
+  ].filter(Boolean).map(function(r){return '<tr><td style="color:#888;padding:2px 8px 2px 0;white-space:nowrap;font-size:.85rem">'+r[0]+'</td><td style="color:#888;padding:2px 4px">:</td><td style="padding:2px 0;font-weight:600;color:#333;font-size:.85rem">'+r[1]+'</td></tr>';}).join('');
+  var itemsHTML=items.map(function(it,i){
+    var bg=i%2===1?'background:#f9f9f9':'';
+    var photoCell=it.photo?('<td style="padding:4px;border:1px solid #eee;text-align:center"><img src="'+it.photo+'" style="max-width:38px;max-height:38px;object-fit:cover;border-radius:4px"/></td>'):'<td style="padding:6px;border:1px solid #eee;text-align:center;color:#ccc;font-size:.75rem">—</td>';
+    return '<tr style="'+bg+'"><td style="padding:7px 6px;text-align:center;border:1px solid #eee;font-size:.85rem">'+(i+1)+'</td>'+photoCell+'<td style="padding:7px 8px;border:1px solid #eee;font-size:.85rem">'+it.detail+'</td><td style="padding:7px 6px;border:1px solid #eee;text-align:right;font-size:.85rem">'+mn(it.price)+'</td><td style="padding:7px 6px;border:1px solid #eee;text-align:center;font-size:.85rem">'+it.qty+'</td><td style="padding:7px 6px;border:1px solid #eee;text-align:right;font-size:.85rem">'+mn(it.qty*it.price)+'</td></tr>';
+  }).join('');
+  var totalsHTML='<tr><td style="padding:5px 14px;color:#666;font-size:.9rem">Sub Total</td><td style="padding:5px 0 5px 24px;text-align:right;font-size:.9rem">'+mn(subtotal)+'</td></tr>';
+  if(discount>0)totalsHTML+='<tr><td style="padding:5px 14px;color:#666;font-size:.9rem">Discount</td><td style="padding:5px 0 5px 24px;text-align:right;font-size:.9rem">'+mn(discount)+'</td></tr>';
+  totalsHTML+='<tr><td style="padding:5px 14px;color:#666;font-size:.9rem">Tax ('+(vatEnabled?'10':'0')+'%)</td><td style="padding:5px 0 5px 24px;text-align:right;font-size:.9rem">'+mn(vat)+'</td></tr>';
+  if(advPct>0)totalsHTML+='<tr><td style="padding:5px 14px;color:#666;font-size:.9rem">Advance ('+advPct+'%)</td><td style="padding:5px 0 5px 24px;text-align:right;font-size:.9rem">'+mn(advance)+'</td></tr>';
+  totalsHTML+='<tr style="background:#464646;color:#fff"><td style="padding:9px 14px;font-weight:700;font-size:.95rem">BALANCE DUE</td><td style="padding:9px 0 9px 24px;text-align:right;font-weight:700;font-size:.95rem">'+mn(balance)+'</td></tr>';
+  var bankHTML='';
+  if(bankName||accountName||accountNumber){
+    var parts=[];if(bankName)parts.push('<strong>Bank:</strong> '+bankName);if(accountName)parts.push('<strong>Acct Name:</strong> '+accountName);if(accountNumber)parts.push('<strong>Acct No:</strong> '+accountNumber);
+    bankHTML='<div style="margin-top:22px;padding-top:12px;border-top:1px solid #eee"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:6px">Bank Details</div><div style="font-size:.88rem;color:#555;line-height:1.9">'+parts.join('<br/>')+'</div></div>';
+  }
+  previewEl.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">'+
+      '<div>'+logoHTML+'</div>'+
+      '<div style="text-align:right"><div style="font-size:2.6rem;font-weight:800;color:#333;letter-spacing:.02em;font-family:sans-serif">'+docType.toUpperCase()+'</div></div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px">'+
+      '<div>'+
+        '<div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#888;margin-bottom:7px">'+(docType==='Invoice'?'Invoice To':'Quotation To')+'</div>'+
+        '<div style="font-size:1.1rem;font-weight:800;color:#222;margin-bottom:3px">'+customerName+'</div>'+
+        (attentionTo?'<div style="color:#555;font-size:.88rem">'+attentionTo+'</div>':'')+
+        (address?'<div style="color:#555;font-size:.85rem;margin-top:3px;white-space:pre-line">'+address+'</div>':'')+
+        (contact?'<div style="color:#555;font-size:.85rem">'+contact+'</div>':'')+
+      '</div>'+
+      '<div style="text-align:right"><table style="margin-left:auto"><tbody>'+metaHTML+'</tbody></table></div>'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px">'+
+      '<thead><tr style="background:#464646;color:#fff">'+
+        '<th style="padding:9px 6px;text-align:center;font-weight:700;font-size:.82rem">#</th>'+
+        '<th style="padding:9px 6px;text-align:center;font-weight:700;font-size:.82rem">Photo</th>'+
+        '<th style="padding:9px 8px;text-align:left;font-weight:700;font-size:.82rem">Description</th>'+
+        '<th style="padding:9px 6px;text-align:right;font-weight:700;font-size:.82rem">Price</th>'+
+        '<th style="padding:9px 6px;text-align:center;font-weight:700;font-size:.82rem">Qty</th>'+
+        '<th style="padding:9px 6px;text-align:right;font-weight:700;font-size:.82rem">Amount</th>'+
+      '</tr></thead><tbody>'+itemsHTML+'</tbody>'+
+    '</table>'+
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:18px">'+
+      '<table style="border-collapse:collapse"><tbody>'+totalsHTML+'</tbody></table>'+
+    '</div>'+
+    bankHTML+
+    '<div style="margin-top:28px;padding-top:10px;border-top:1px solid #eee;font-size:.78rem;color:#bbb;font-family:sans-serif">'+COMPANY_NAME+' — Generated '+new Date().toLocaleDateString()+'</div>';
+}
+
 /* === LETTER SECTION === */
 function copyLetter(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(function(){alert('Copied to clipboard!');});}
 
@@ -875,7 +948,7 @@ function resetContract(){
 /* === INIT === */
 window.addEventListener("load",async function(){
   // Init page visibility
-  document.getElementById('page-qinv').style.display='block';
+  document.getElementById('page-qinv').style.display='grid';
   document.getElementById('page-delivery').style.display='none';
   document.getElementById('page-contract').style.display='none';
   $id("docDate").valueAsDate=new Date();
@@ -893,6 +966,7 @@ window.addEventListener("load",async function(){
   $id("clearAllBtn").addEventListener("click",function(){if(confirm("Clear ALL saved documents?")){dbClear();renderSavedList();}});
   $id("exportBtn").addEventListener("click",exportAllJson);
   addItem();
+  renderQI();
   renderDelivery();
   renderContract();
   // Init Google Auth when GIS loads
