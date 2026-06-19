@@ -126,6 +126,11 @@
     <h1>&#128196; Glori Document</h1>
     <span>Quotation &bull; Invoice &bull; Delivery &bull; Contract</span>
   </div>
+  <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+    <span style="font-size:.75rem;color:#aaa;font-weight:600">Language:</span>
+    <button id="lang-en" onclick="setLang('en')" style="padding:5px 12px;border-radius:20px;border:none;background:#e94560;color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">EN</button>
+    <button id="lang-lo" onclick="setLang('lo')" style="padding:5px 12px;border-radius:20px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">ລາວ</button>
+  </div>
 </header>
 
 <div class="tabs">
@@ -295,6 +300,109 @@ var fmt=function(n){return Number(n||0).toLocaleString();};
 
 /* === Q&I CONSTANTS === */
 var COMPANY_NAME="Glori Creativity Sole Co.,Ltd";
+var currentLang="en";
+var LANG={
+  en:{
+    dearLabel:"Dear:",subjectLabel:"Subject:",deliveryTitle:"DELIVERY LETTER",
+    p1:function(subject,dispDate){return "We are pleased to inform you that your order for <strong>"+subject+"</strong> has been successfully dispatched and is scheduled for delivery on <strong>"+dispDate+".</strong> This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.";},
+    deliveryDetails:"Delivery Details:",deliveryDate:"Delivery Date:",timeWindow:"Time Window:",shippingAddress:"Shipping Address:",
+    p3:function(phone,email){return "Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at "+phone+" or "+email+" as soon as possible.";},
+    instrTitle:"Instructions for Receiving the Delivery:",
+    insp:function(subject,phone){return "<strong>Inspection:</strong> Upon receiving the <strong>"+subject+"</strong>, please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team or contact our customer service at "+phone+".";},
+    sig:"<strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt.",
+    conf:"<strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. A copy will be provided for your records.",
+    thanks:function(company){return "Thank you for choosing <strong>"+company+"</strong>. We value your business and look forward to serving you again.";},
+    receipt:"Delivery Receipt (for signature)",sincerely:"Sincerely,",
+    contractTitle:"SALES CONTRACT",contractNo:"Contract No.:",dateLabel:"Date:",
+    seller:"SELLER",buyer:"BUYER",
+    contractIntro:function(date,seller,buyer){return "This Sales Contract is entered into as of <strong>"+date+"</strong> between <strong>"+seller+"</strong> (Seller) and <strong>"+buyer+"</strong> (Buyer) for the following goods:";},
+    descCol:"Description",qtyCol:"Qty",upCol:"Unit Price",totalCol:"Total",
+    paymentLabel:"Payment Terms:",deliveryDateLabel:"Delivery Date:",deliveryAddrLabel:"Delivery Address:",
+    bothParties:"Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.",
+    authorizedRep:"Authorized Representative"
+  },
+  lo:{
+    dearLabel:"ຮຽນ:",subjectLabel:"ເລື່ອງ:",deliveryTitle:"ຈົດໝາຍສົ່ງສິນຄ້າ",
+    p1:function(subject,dispDate){return "ພວກເຮົາຂໍແຈ້ງໃຫ້ທ່ານຊາບວ່າ ສິນຄ້າ <strong>"+subject+"</strong> ຂອງທ່ານ ໄດ້ຖືກດຳເນີນການຈັດສົ່ງສຳເລັດຮຽບຮ້ອຍແລ້ວ ໂດຍກຳນົດຈັດສົ່ງໃນວັນທີ <strong>"+dispDate+".</strong> ຈົດໝາຍສະບັບນີ້ ເປັນການຢືນຢັນ ແລະ ແຈ້ງລາຍລະອຽດທີ່ສຳຄັນ.";},
+    deliveryDetails:"ລາຍລະອຽດການຈັດສົ່ງ:",deliveryDate:"ວັນທີຈັດສົ່ງ:",timeWindow:"ໄລຍະເວລາ:",shippingAddress:"ທີ່ຢູ່ຈັດສົ່ງ:",
+    p3:function(phone,email){return "ກະລຸນາໃຫ້ແນ່ໃຈວ່າ ມີຜູ້ຮັບຜິດຊອບຢູ່ທີ່ທີ່ຢູ່ຈັດສົ່ງ. ຫາກຕ້ອງການປ່ຽນເວລາ ຫຼື ທີ່ຢູ່ ກະລຸນາຕິດຕໍ່ "+phone+" ຫຼື "+email+" ໂດຍໄວ.";},
+    instrTitle:"ຄຳແນະນຳໃນການຮັບສິນຄ້າ:",
+    insp:function(subject,phone){return "<strong>ກວດສອບສິນຄ້າ:</strong> ເມື່ອໄດ້ຮັບ <strong>"+subject+"</strong> ກະລຸນາກວດສອບຄວາມເສຍຫາຍ. ຫາກພົບບັນຫາ ໃຫ້ແຈ້ງທີມຈັດສົ່ງ ຫຼື ຕິດຕໍ່ "+phone+".";},
+    sig:"<strong>ລາຍເຊັນລູກຄ້າ:</strong> ຕ້ອງການລາຍເຊັນຈາກທ່ານ ຫຼື ຜູ້ຕາງໜ້າ ເມື່ອຮັບສິນຄ້າ.",
+    conf:"<strong>ຢືນຢັນການຈັດສົ່ງ:</strong> ທີມຈັດສົ່ງຈະໃຫ້ໃບຮັບສິນຄ້າລົງລາຍເຊັນ ແລະ ສົ່ງສຳເນົາໃຫ້ທ່ານ.",
+    thanks:function(company){return "ຂໍຂອບໃຈທີ່ທ່ານໄວ້ວາງໃຈ <strong>"+company+"</strong>. ພວກເຮົາຍິນດີໃຫ້ບໍລິການທ່ານໃນໂອກາດຕໍ່ໄປ.";},
+    receipt:"ໃບຮັບສິນຄ້າ (ສຳລັບລາຍເຊັນ)",sincerely:"ດ້ວຍຄວາມນັບຖື,",
+    contractTitle:"ສັນຍາການຊື້ຂາຍ",contractNo:"ເລກທີສັນຍາ:",dateLabel:"ວັນທີ:",
+    seller:"ຜູ້ຂາຍ",buyer:"ຜູ້ຊື້",
+    contractIntro:function(date,seller,buyer){return "ສັນຍານີ້ຖືກຈັດທຳຂຶ້ນໃນວັນທີ <strong>"+date+"</strong> ລະຫວ່າງ <strong>"+seller+"</strong> (ຜູ້ຂາຍ) ແລະ <strong>"+buyer+"</strong> (ຜູ້ຊື້) ສຳລັບສິນຄ້າດັ່ງຕໍ່ໄປນີ້:";},
+    descCol:"ລາຍລະອຽດ",qtyCol:"ຈຳນວນ",upCol:"ລາຄາ/ໜ່ວຍ",totalCol:"ລວມ",
+    paymentLabel:"ເງື່ອນໄຂການຊຳລະ:",deliveryDateLabel:"ວັນທີຈັດສົ່ງ:",deliveryAddrLabel:"ທີ່ຢູ່ຈັດສົ່ງ:",
+    bothParties:"ທັງສອງຝ່າຍໄດ້ເຫັນດີ ແລະ ຍອມຮັບເງື່ອນໄຂທີ່ລະບຸໄວ້ໃນສັນຍານີ້. ການດັດແກ້ໃດໆ ຕ້ອງເຮັດເປັນລາຍລັກອັກສອນ ແລະ ລົງລາຍເຊັນຈາກທັງສອງຝ່າຍ.",
+    authorizedRep:"ຜູ້ຕາງໜ້າທີ່ໄດ້ຮັບອຳນາດ"
+  }
+};
+function setLang(lang){
+  currentLang=lang;
+  var eb=document.getElementById("lang-en"),lb=document.getElementById("lang-lo");
+  if(eb)eb.style.background=lang==="en"?"#e94560":"rgba(255,255,255,0.15)";
+  if(lb)lb.style.background=lang==="lo"?"#e94560":"rgba(255,255,255,0.15)";
+  renderDelivery();renderContract();
+}
+var currentLang="en";
+
+var LANG={
+  en:{
+    dearLabel:"Dear:",subjectLabel:"Subject:",
+    deliveryTitle:"DELIVERY LETTER",
+    p1:function(subject,dispDate){return "We are pleased to inform you that your order for <strong>"+subject+"</strong> has been successfully dispatched and is scheduled for delivery on <strong>"+dispDate+".</strong> This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.";},
+    deliveryDetails:"Delivery Details:",
+    deliveryDate:"Delivery Date:",timeWindow:"Time Window:",shippingAddress:"Shipping Address:",
+    p3:function(phone,email){return "Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at "+phone+" or "+email+" as soon as possible.";},
+    instrTitle:"Instructions for Receiving the Delivery:",
+    insp:function(subject,phone){return "<strong>Inspection:</strong> Upon receiving the <strong>"+subject+"</strong>, please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team immediately or contact our customer service at "+phone+".";},
+    sig:"<strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt.",
+    conf:"<strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. A copy will be provided for your records.",
+    thanks:function(company){return "Thank you for choosing <strong>"+company+"</strong>. We value your business and look forward to serving you again.";},
+    receipt:"Delivery Receipt (for signature)",sincerely:"Sincerely,",
+    contractTitle:"SALES CONTRACT",contractNo:"Contract No.:",dateLabel:"Date:",
+    seller:"SELLER",buyer:"BUYER",
+    contractIntro:function(date,seller,buyer){return 'This Sales Contract is entered into as of <strong>'+date+'</strong> between <strong>'+seller+'</strong> (Seller) and <strong>'+buyer+'</strong> (Buyer) for the following goods:';},
+    descCol:"Description",qtyCol:"Qty",upCol:"Unit Price",totalCol:"Total",
+    paymentLabel:"Payment Terms:",deliveryDateLabel:"Delivery Date:",deliveryAddrLabel:"Delivery Address:",
+    bothParties:"Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.",
+    authorizedRep:"Authorized Representative"
+  },
+  lo:{
+    dearLabel:"ຮຽນ:",subjectLabel:"ເລື່ອງ:",
+    deliveryTitle:"ຈົດໝາຍສົ່ງສິນຄ້າ",
+    p1:function(subject,dispDate){return "ພວກເຮົາຂໍແຈ້ງໃຫ້ທ່ານຊາບວ່າ ສິນຄ້າ <strong>"+subject+"</strong> ຂອງທ່ານ ໄດ້ຖືກດຳເນີນການຈັດສົ່ງສຳເລັດຮຽບຮ້ອຍແລ້ວ ໂດຍກຳນົດຈັດສົ່ງໃນວັນທີ <strong>"+dispDate+".</strong> ຈົດໝາຍສະບັບນີ້ ເປັນການຢືນຢັນການຈັດສົ່ງ ແລະ ເພື່ອແຈ້ງລາຍລະອຽດທີ່ສຳຄັນກ່ຽວກັບຂະບວນການຈັດສົ່ງ.";},
+    deliveryDetails:"ລາຍລະອຽດການຈັດສົ່ງ:",
+    deliveryDate:"ວັນທີຈັດສົ່ງ:",timeWindow:"ໄລຍະເວລາ:",shippingAddress:"ທີ່ຢູ່ຈັດສົ່ງ:",
+    p3:function(phone,email){return "ກະລຸນາໃຫ້ແນ່ໃຈວ່າ ມີຜູ້ຮັບຜິດຊອບຢູ່ທີ່ທີ່ຢູ່ຈັດສົ່ງ ເພື່ອເຊັນຮັບສິນຄ້າ. ຫາກຕ້ອງການປ່ຽນເວລາ ຫຼື ທີ່ຢູ່ຈັດສົ່ງ ກະລຸນາຕິດຕໍ່ພວກເຮົາທີ່ "+phone+" ຫຼື "+email+" ໂດຍໄວ.";},
+    instrTitle:"ຄຳແນະນຳໃນການຮັບສິນຄ້າ:",
+    insp:function(subject,phone){return "<strong>ກວດສອບສິນຄ້າ:</strong> ເມື່ອໄດ້ຮັບ <strong>"+subject+"</strong> ກະລຸນາກວດສອບຄວາມເສຍຫາຍຂອງສິນຄ້າ. ຫາກພົບບັນຫາ ໃຫ້ແຈ້ງທີມຈັດສົ່ງທັນທີ ຫຼື ຕິດຕໍ່ຝ່າຍບໍລິການລູກຄ້າ "+phone+".";},
+    sig:"<strong>ລາຍເຊັນລູກຄ້າ:</strong> ຕ້ອງການລາຍເຊັນຈາກທ່ານ ຫຼື ຜູ້ຕາງໜ້າທີ່ໄດ້ຮັບອຳນາດ ເມື່ອຮັບສິນຄ້າ.",
+    conf:"<strong>ຢືນຢັນການຈັດສົ່ງ:</strong> ທີມຈັດສົ່ງຈະສົ່ງໃບຮັບສິນຄ້າໃຫ້ທ່ານລົງລາຍເຊັນ ແລະ ຈະໃຫ້ສຳເນົາໄວ້ເປັນຫຼັກຖານ.",
+    thanks:function(company){return "ຂໍຂອບໃຈທີ່ທ່ານໄວ້ວາງໃຈ <strong>"+company+"</strong>. ພວກເຮົາຍິນດີໃຫ້ບໍລິການທ່ານໃນໂອກາດຕໍ່ໄປ.";},
+    receipt:"ໃບຮັບສິນຄ້າ (ສຳລັບລາຍເຊັນ)",sincerely:"ດ້ວຍຄວາມນັບຖື,",
+    contractTitle:"ສັນຍາການຊື້ຂາຍ",contractNo:"ເລກທີສັນຍາ:",dateLabel:"ວັນທີ:",
+    seller:"ຜູ້ຂາຍ",buyer:"ຜູ້ຊື້",
+    contractIntro:function(date,seller,buyer){return 'ສັນຍານີ້ຖືກຈັດທຳຂຶ້ນໃນວັນທີ <strong>'+date+'</strong> ລະຫວ່າງ <strong>'+seller+'</strong> (ຜູ້ຂາຍ) ແລະ <strong>'+buyer+'</strong> (ຜູ້ຊື້) ສຳລັບສິນຄ້າດັ່ງຕໍ່ໄປນີ້:';},
+    descCol:"ລາຍລະອຽດ",qtyCol:"ຈຳນວນ",upCol:"ລາຄາ/ໜ່ວຍ",totalCol:"ລວມ",
+    paymentLabel:"ເງື່ອນໄຂການຊຳລະ:",deliveryDateLabel:"ວັນທີຈັດສົ່ງ:",deliveryAddrLabel:"ທີ່ຢູ່ຈັດສົ່ງ:",
+    bothParties:"ທັງສອງຝ່າຍໄດ້ເຫັນດີ ແລະ ຍອມຮັບເງື່ອນໄຂທີ່ລະບຸໄວ້ໃນສັນຍານີ້. ການດັດແກ້ໃດໆ ຕ້ອງເຮັດເປັນລາຍລັກອັກສອນ ແລະ ລົງລາຍເຊັນຈາກທັງສອງຝ່າຍ.",
+    authorizedRep:"ຜູ້ຕາງໜ້າທີ່ໄດ້ຮັບອຳນາດ"
+  }
+};
+
+function setLang(lang){
+  currentLang=lang;
+  var enBtn=document.getElementById("lang-en");
+  var loBtn=document.getElementById("lang-lo");
+  if(enBtn){enBtn.style.background=lang==="en"?"#e94560":"rgba(255,255,255,0.15)";}
+  if(loBtn){loBtn.style.background=lang==="lo"?"#e94560":"rgba(255,255,255,0.15)";}
+  renderDelivery();renderContract();
+}
 var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
 var LOGO_PATH="LOGO/New-logo.png";
 var LOGO_DATAURL=null;
@@ -885,6 +993,7 @@ function renderQI(){
 function copyLetter(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(function(){alert('Copied to clipboard!');});}
 
 function renderDelivery(){
+  var T=LANG[currentLang];
   var dear=g('d-dear'),qty=g('d-qty'),product=g('d-product'),brand=g('d-brand');
   var dispDate=g('d-dispatchdate'),delDay=g('d-deliveryday'),time=g('d-time');
   var address=g('d-address'),phone=g('d-phone'),email=g('d-email');
@@ -894,21 +1003,20 @@ function renderDelivery(){
   var subjectS=qty+' '+product+' ('+brand+')';
   document.getElementById('delivery-preview').innerHTML=
     '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
-    '<p style="margin-bottom:6px">Dear: <strong>'+dear+'</strong></p>'+
-    '<p style="margin-bottom:18px">Subject: <strong>'+subject+'</strong></p>'+
+    '<p style="margin-bottom:6px">'+T.dearLabel+' <strong>'+dear+'</strong></p>'+
+    '<p style="margin-bottom:18px">'+T.subjectLabel+' <strong>'+subject+'</strong></p>'+
     '<div class="letter-body">'+
-    '<p>We are pleased to inform you that your order for <strong>'+subject+'</strong> has been successfully dispatched and is scheduled for delivery on <strong>'+dispDate+'.</strong> This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.</p>'+
-    '<p><strong>Delivery Details:</strong><br>Delivery Date: '+delDay+'<br>Time Window: '+time+'<br>Shipping Address: '+address+'</p>'+
-    '<p>Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at '+phone+' or '+email+' as soon as possible to make arrangements.</p>'+
-    '<p><strong>Instructions for Receiving the Delivery:</strong></p>'+
-    '<p><strong>Inspection:</strong> Upon receiving the <strong>'+subject+'</strong>, please inspect the items for any visible damage or discrepancies. Should you notice any issues, please notify the delivery team immediately or contact our customer service at '+phone+'.</p>'+
-    '<p><strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt. If you are not available, please arrange for someone to sign on your behalf.</p>'+
-    '<p><strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. Once signed, the delivery will be officially complete. A copy of this receipt will be provided to you for your records.</p>'+
-    '<p><strong>Post-Delivery Support:</strong> Should you have any questions regarding your <strong>'+subjectS+'</strong>, please do not hesitate to reach out to our customer support team.</p>'+
-    '<p>Thank you for choosing <strong>'+company+'</strong>. We value your business and look forward to serving you again in the future.</p>'+
+    '<p>'+T.p1(subject,dispDate)+'</p>'+
+    '<p><strong>'+T.deliveryDetails+'</strong><br>'+T.deliveryDate+' '+delDay+'<br>'+T.timeWindow+' '+time+'<br>'+T.shippingAddress+' '+address+'</p>'+
+    '<p>'+T.p3(phone,email)+'</p>'+
+    '<p><strong>'+T.instrTitle+'</strong></p>'+
+    '<p>'+T.insp(subject,phone)+'</p>'+
+    '<p>'+T.sig+'</p>'+
+    '<p>'+T.conf+'</p>'+
+    '<p>'+T.thanks(company)+'</p>'+
     '</div>'+
-    '<div style="margin-top:48px"><div class="receipt-line">Delivery Receipt (for signature)</div>'+
-    '<p>Sincerely,</p><br><p class="sig-name">'+sender+'</p><p>'+position+'</p><p>'+company+'</p><p>'+sphone+'</p><p>'+semail+'</p></div>';
+    '<div style="margin-top:48px"><div class="receipt-line">'+T.receipt+'</div>'+
+    '<p>'+T.sincerely+'</p><br><p class="sig-name">'+sender+'</p><p>'+position+'</p><p>'+company+'</p><p>'+sphone+'</p><p>'+semail+'</p></div>';
 }
 
 function resetDelivery(){
@@ -917,6 +1025,7 @@ function resetDelivery(){
 }
 
 function renderContract(){
+  var T=LANG[currentLang];
   var seller=g('c-seller'),buyer=g('c-buyer')||'_______________',date=g('c-date')||'_______________';
   var num=g('c-num')||'_______________',qty=g('c-qty')||'&mdash;',product=g('c-product')||'&mdash;';
   var uprice=g('c-uprice')||'&mdash;',total=g('c-total')||'&mdash;',payment=g('c-payment')||'_______________';
@@ -924,17 +1033,17 @@ function renderContract(){
   var sender=g('c-sender'),position=g('c-position');
   document.getElementById('contract-preview').innerHTML=
     '<div class="letter-logo"><div class="logo-text">Glori</div></div>'+
-    '<p style="text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:20px;text-decoration:underline;">SALES CONTRACT</p>'+
-    '<table style="width:100%;margin-bottom:18px;font-size:.95em"><tr><td><strong>Contract No.:</strong> '+num+'</td><td style="text-align:right"><strong>Date:</strong> '+date+'</td></tr></table>'+
-    '<p style="margin-bottom:8px"><strong>SELLER:</strong> '+seller+'</p>'+
-    '<p style="margin-bottom:18px"><strong>BUYER:</strong> '+buyer+'</p>'+
-    '<p style="margin-bottom:14px">This Sales Contract is entered into as of <strong>'+date+'</strong> between <strong>'+seller+'</strong> ("Seller") and <strong>'+buyer+'</strong> ("Buyer") for the following goods:</p>'+
-    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><thead><tr style="background:#f5f5f5"><th style="border:1px solid #ccc;padding:7px 10px;text-align:left">Description</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:center">Qty</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">Unit Price</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">Total</th></tr></thead><tbody><tr><td style="border:1px solid #ccc;padding:7px 10px">'+product+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:center">'+qty+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+uprice+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+total+'</td></tr></tbody></table>'+
-    '<p style="margin-bottom:8px"><strong>Payment Terms:</strong> '+payment+'</p>'+
-    '<p style="margin-bottom:4px"><strong>Delivery Date:</strong> '+deldate+'</p>'+
-    '<p style="margin-bottom:18px"><strong>Delivery Address:</strong> '+address+'</p>'+
-    '<p style="margin-bottom:32px">Both parties agree to the terms and conditions stated in this contract. Any modifications must be made in writing and signed by both parties.</p>'+
-    '<table style="width:100%"><tr><td style="width:48%;vertical-align:top"><p><strong>SELLER</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px;font-weight:bold">'+sender+'</p><p>'+position+'</p><p>'+seller+'</p></td><td style="width:4%"></td><td style="width:48%;vertical-align:top"><p><strong>BUYER</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px">Authorized Representative</p><p>'+buyer+'</p></td></tr></table>';
+    '<p style="text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:20px;text-decoration:underline;">'+T.contractTitle+'</p>'+
+    '<table style="width:100%;margin-bottom:18px;font-size:.95em"><tr><td><strong>'+T.contractNo+'</strong> '+num+'</td><td style="text-align:right"><strong>'+T.dateLabel+'</strong> '+date+'</td></tr></table>'+
+    '<p style="margin-bottom:8px"><strong>'+T.seller+':</strong> '+seller+'</p>'+
+    '<p style="margin-bottom:18px"><strong>'+T.buyer+':</strong> '+buyer+'</p>'+
+    '<p style="margin-bottom:14px">'+T.contractIntro(date,seller,buyer)+'</p>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:18px"><thead><tr style="background:#f5f5f5"><th style="border:1px solid #ccc;padding:7px 10px;text-align:left">'+T.descCol+'</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:center">'+T.qtyCol+'</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+T.upCol+'</th><th style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+T.totalCol+'</th></tr></thead><tbody><tr><td style="border:1px solid #ccc;padding:7px 10px">'+product+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:center">'+qty+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+uprice+'</td><td style="border:1px solid #ccc;padding:7px 10px;text-align:right">'+total+'</td></tr></tbody></table>'+
+    '<p style="margin-bottom:8px"><strong>'+T.paymentLabel+'</strong> '+payment+'</p>'+
+    '<p style="margin-bottom:4px"><strong>'+T.deliveryDateLabel+'</strong> '+deldate+'</p>'+
+    '<p style="margin-bottom:18px"><strong>'+T.deliveryAddrLabel+'</strong> '+address+'</p>'+
+    '<p style="margin-bottom:32px">'+T.bothParties+'</p>'+
+    '<table style="width:100%"><tr><td style="width:48%;vertical-align:top"><p><strong>'+T.seller.toUpperCase()+'</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px;font-weight:bold">'+sender+'</p><p>'+position+'</p><p>'+seller+'</p></td><td style="width:4%"></td><td style="width:48%;vertical-align:top"><p><strong>'+T.buyer.toUpperCase()+'</strong></p><br><br><p style="border-top:1px solid #333;padding-top:6px">'+T.authorizedRep+'</p><p>'+buyer+'</p></td></tr></table>';
 }
 
 function resetContract(){
