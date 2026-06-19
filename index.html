@@ -541,7 +541,7 @@ function generatePdf(payload){
   var isInvoice=(payload.docType||"").toLowerCase()==="invoice";
   var TITLE=(payload.docType||"INVOICE").toUpperCase();
   // Background full page
-  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",0,0,W,H);}catch(e){}}
+  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,"JPEG",0,0,W,H);}catch(e){console.warn("bg err",e);}}
   if(LOGO_DATAURL){
     var fmtImg=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
     var p=doc.getImageProperties(LOGO_DATAURL);var iw=p.width,ih=p.height;
@@ -690,7 +690,12 @@ async function loadBackgroundFromDrive(){
     var elemId=d1.files[0].id;
     // Load Background.png
     var bg=await loadFileFromElements(elemId,"Background.png");
-    if(bg){BG_IMAGE_DATAURL=bg;applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');}
+    if(bg){
+      // Pre-flatten PNG transparency to JPEG so jsPDF can render it
+      BG_IMAGE_DATAURL=bg;
+      flattenPngAsync(bg).then(function(flat){BG_IMAGE_DATAURL=flat;});
+      applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
+    }
     // Load Head logo.png and override LOGO_DATAURL
     var logo=await loadFileFromElements(elemId,"Head logo.png");
     if(logo){
@@ -734,6 +739,28 @@ async function uploadPdfToDriveFolder(folderName,fileName,pdfBase64){
   return true;
 }
 
+function flattenPngToJpeg(dataUrl){
+  // Already processed or JPEG - return as-is
+  return dataUrl;
+}
+function flattenPngAsync(dataUrl){
+  // Returns a Promise that resolves to a white-background JPEG dataUrl
+  return new Promise(function(resolve){
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var c=document.createElement('canvas');
+        c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var ctx=c.getContext('2d');
+        ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
+        ctx.drawImage(img,0,0);
+        resolve(c.toDataURL('image/jpeg',0.85));
+      }catch(e){resolve(dataUrl);}
+    };
+    img.onerror=function(){resolve(dataUrl);};
+    img.src=dataUrl;
+  });
+}
 function generateDeliveryPdfBase64(){
   var T=LANG[currentLang];
   if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
@@ -745,7 +772,7 @@ function generateDeliveryPdfBase64(){
   var TW=W-L-R;
   var dark=[30,30,30],gray=[80,80,80];
   // Background full page
-  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",0,0,W,H);}catch(e){}}
+  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,"JPEG",0,0,W,H);}catch(e){console.warn("bg err",e);}}
   // Head logo centered
   if(LOGO_DATAURL){
     try{
@@ -850,7 +877,7 @@ function generateContractPdfBase64(){
   var dark=[40,40,40],mid=[100,100,100];
   var TW=W-L-R;
   // Background image (full page, drawn first)
-  if(BG_IMAGE_DATAURL){try{var bgFmt=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgFmt,0,0,W,H);}catch(e){console.warn("BG draw failed",e);}}
+  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,"JPEG",0,0,W,H);}catch(e){console.warn("BG draw failed",e);}}
   if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
   doc.setFontSize(16);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("GLORI CREATIVITY SOLE.,LTD",W/2,y+8,{align:"center"});
   doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,mid);doc.text("customer_sv@glori-cre.org  |  +856 20 95577556",W/2,y+15,{align:"center"});
