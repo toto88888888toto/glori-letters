@@ -410,6 +410,7 @@ function setLang(lang){
 var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
 var LOGO_PATH="LOGO/New-logo.png";
 var LOGO_DATAURL=null;
+var LOGO_WM_DATAURL=null; // opacity-reduced version of logo for watermark
 var BG_IMAGE_DATAURL=null;
 var PDF_FONT_READY=false;
 var vatEnabled=false;
@@ -702,6 +703,11 @@ async function loadBackgroundFromDrive(){
     if(logo){
       LOGO_DATAURL=logo;
       renderDelivery();renderContract();renderQI();
+      // Pre-process logo at same opacity for watermark fallback
+      flattenPngAsync(logo).then(function(flat){
+        LOGO_WM_DATAURL=flat;
+        applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
+      });
     }
   }catch(e){console.warn("Elements load failed:",e);}
 }
@@ -1096,7 +1102,7 @@ function applyPreviewBg(elId){
   var old=container.querySelector('.wm-overlay');if(old)old.remove();
   // Set background directly on .letter element — content always renders above its own background
   var el=container.querySelector('.letter')||container;
-  var imgSrc=BG_IMAGE_DATAURL||LOGO_DATAURL;
+  var imgSrc=BG_IMAGE_DATAURL||LOGO_WM_DATAURL; // use opacity-reduced versions only
   if(!imgSrc){el.style.backgroundImage='none';return;}
   el.style.backgroundImage='url('+imgSrc+')';
   el.style.backgroundSize='contain';
