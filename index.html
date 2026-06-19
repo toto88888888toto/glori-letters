@@ -1099,7 +1099,7 @@ function applyPreviewBg(elId){
   var imgSrc=BG_IMAGE_DATAURL||LOGO_DATAURL;
   if(!imgSrc){el.style.backgroundImage='none';return;}
   el.style.backgroundImage='url('+imgSrc+')';
-  el.style.backgroundSize='55%';
+  el.style.backgroundSize='contain';
   el.style.backgroundPosition='center center';
   el.style.backgroundRepeat='no-repeat';
   console.log('BG set on .letter in '+elId+' len='+(imgSrc.length));
