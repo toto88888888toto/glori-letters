@@ -540,6 +540,8 @@ function generatePdf(payload){
   function qtyFmt(n){return nf0.format(Number(n||0));}
   var isInvoice=(payload.docType||"").toLowerCase()==="invoice";
   var TITLE=(payload.docType||"INVOICE").toUpperCase();
+  // Background full page
+  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",0,0,W,H);}catch(e){}}
   if(LOGO_DATAURL){
     var fmtImg=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
     var p=doc.getImageProperties(LOGO_DATAURL);var iw=p.width,ih=p.height;
