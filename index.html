@@ -703,7 +703,11 @@ async function loadBackgroundFromDrive(){
     var logo=await loadFileFromElements(elemId,"Head logo.png");
     if(logo){
       LOGO_DATAURL=logo;
-      renderDelivery();renderContract();renderQI();
+      // Flatten logo at 50% opacity THEN render, so LOGO_WM_DATAURL is ready for watermark
+      flattenPngAsync(logo).then(function(flat){
+        LOGO_WM_DATAURL=flat;
+        renderDelivery();renderContract();renderQI();
+      });
     }
   }catch(e){console.warn("Elements load failed:",e);}
 }
@@ -759,7 +763,7 @@ function flattenPngAsync(dataUrl){
         // White background
         ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
         // Draw inverted at low opacity so white design becomes subtle gray watermark
-        ctx.globalAlpha=0.25;
+        ctx.globalAlpha=0.50;
         ctx.filter='invert(1)';
         ctx.drawImage(img,0,0);
         ctx.globalAlpha=1.0;
@@ -1094,18 +1098,17 @@ function renderQI(){
 function applyPreviewBg(elId){
   var container=document.getElementById(elId);
   if(!container)return;
-  // Find .letter element inside preview container
-  var letterEl=container.querySelector('.letter')||container;
-  // Remove old overlay if present
-  var old=letterEl.querySelector('.wm-overlay');if(old)old.remove();
-  // Use raw images — opacity controlled via CSS on the overlay div (no pre-processing needed)
-  var imgSrc=BG_IMAGE_RAW||LOGO_DATAURL;
+  var el=container.querySelector('.letter')||container;
+  // Remove old overlay div
+  var old=el.querySelector('.wm-overlay');if(old)old.remove();
+  // Use pre-processed image (opacity baked in via flattenPngAsync)
+  var imgSrc=BG_IMAGE_DATAURL||LOGO_WM_DATAURL;
   if(!imgSrc)return;
-  var wm=document.createElement('div');
-  wm.className='wm-overlay';
-  wm.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('+imgSrc+');background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.50;pointer-events:none;z-index:-1;filter:invert(1);';
-  letterEl.insertBefore(wm,letterEl.firstChild);
-  console.log('WM overlay injected into '+elId);
+  el.style.backgroundImage='url('+imgSrc+')';
+  el.style.backgroundSize='contain';
+  el.style.backgroundPosition='center center';
+  el.style.backgroundRepeat='no-repeat';
+  console.log('WM bg-image set on .letter in '+elId);
 }
 function headLogoHTML(){
   if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
