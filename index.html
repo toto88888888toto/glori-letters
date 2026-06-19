@@ -684,7 +684,7 @@ async function loadBackgroundFromDrive(){
     var elemId=d1.files[0].id;
     // Load Background.png
     var bg=await loadFileFromElements(elemId,"Background.png");
-    if(bg){BG_IMAGE_DATAURL=bg;}
+    if(bg){BG_IMAGE_DATAURL=bg;applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');}
     // Load Head logo.png and override LOGO_DATAURL
     var logo=await loadFileFromElements(elemId,"Head logo.png");
     if(logo){
@@ -965,10 +965,11 @@ function renderQI(){
     var parts=[];if(bankName)parts.push('<strong>Bank:</strong> '+bankName);if(accountName)parts.push('<strong>Acct Name:</strong> '+accountName);if(accountNumber)parts.push('<strong>Acct No:</strong> '+accountNumber);
     bankHTML='<div style="margin-top:22px;padding-top:12px;border-top:1px solid #eee"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:6px">Bank Details</div><div style="font-size:.88rem;color:#555;line-height:1.9">'+parts.join('<br/>')+'</div></div>';
   }
+  applyPreviewBg('qi-preview');
   previewEl.innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">'+
-      '<div>'+logoHTML+'</div>'+
-      '<div style="text-align:right"><div style="font-size:2.6rem;font-weight:800;color:#333;letter-spacing:.02em;font-family:"Poppins",sans-serif">'+docType.toUpperCase()+'</div></div>'+
+    headLogoHTML()+
+    '<div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;border-bottom:2px solid #eee;padding-bottom:14px">'+
+      '<div style="font-size:2.6rem;font-weight:800;color:#333;letter-spacing:.02em">'+docType.toUpperCase()+'</div>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px">'+
       '<div>'+
@@ -998,6 +999,22 @@ function renderQI(){
 }
 
 /* === LETTER SECTION === */
+function applyPreviewBg(elId){
+  var el=document.getElementById(elId);
+  if(!el)return;
+  if(BG_IMAGE_DATAURL){
+    el.style.backgroundImage='url('+BG_IMAGE_DATAURL+')';
+    el.style.backgroundSize='cover';
+    el.style.backgroundPosition='center';
+    el.style.backgroundRepeat='no-repeat';
+  }else{
+    el.style.backgroundImage='';
+  }
+}
+function headLogoHTML(){
+  if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
+  return '<div class="letter-logo"><div class="logo-text">Glori</div></div>';
+}
 function copyLetter(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(function(){alert('Copied to clipboard!');});}
 
 function renderDelivery(){
@@ -1009,8 +1026,9 @@ function renderDelivery(){
   var sphone=g('d-sphone'),semail=g('d-semail');
   var subject=qty+' sets of '+product+' ('+brand+')';
   var subjectS=qty+' '+product+' ('+brand+')';
+  applyPreviewBg('delivery-preview');
   document.getElementById('delivery-preview').innerHTML=
-    '<div class="letter-logo">'+( LOGO_DATAURL ?'<img src="'+LOGO_DATAURL+'" style="max-height:80px;max-width:220px;object-fit:contain"/>':'<div class="logo-text">Glori</div>')+'</div>'+
+    headLogoHTML()+
     '<p style="margin-bottom:6px">'+T.dearLabel+' <strong>'+dear+'</strong></p>'+
     '<p style="margin-bottom:18px">'+T.subjectLabel+' <strong>'+subject+'</strong></p>'+
     '<div class="letter-body">'+
@@ -1039,8 +1057,9 @@ function renderContract(){
   var uprice=g('c-uprice')||'&mdash;',total=g('c-total')||'&mdash;',payment=g('c-payment')||'_______________';
   var deldate=g('c-deldate')||'_______________',address=g('c-address')||'_______________';
   var sender=g('c-sender'),position=g('c-position');
+  applyPreviewBg('contract-preview');
   document.getElementById('contract-preview').innerHTML=
-    '<div class="letter-logo">'+( LOGO_DATAURL ?'<img src="'+LOGO_DATAURL+'" style="max-height:80px;max-width:220px;object-fit:contain"/>':'<div class="logo-text">Glori</div>')+'</div>'+
+    headLogoHTML()+
     '<p style="text-align:center;font-size:1.1em;font-weight:bold;margin-bottom:20px;text-decoration:underline;">'+T.contractTitle+'</p>'+
     '<table style="width:100%;margin-bottom:18px;font-size:.95em"><tr><td><strong>'+T.contractNo+'</strong> '+num+'</td><td style="text-align:right"><strong>'+T.dateLabel+'</strong> '+date+'</td></tr></table>'+
     '<p style="margin-bottom:8px"><strong>'+T.seller+':</strong> '+seller+'</p>'+
