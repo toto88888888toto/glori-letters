@@ -694,7 +694,7 @@ async function loadBackgroundFromDrive(){
       BG_IMAGE_DATAURL=bg;
       applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
       // Pre-flatten PNG to JPEG for jsPDF (async, replaces BG_IMAGE_DATAURL when ready)
-      flattenPngAsync(bg).then(function(flat){BG_IMAGE_DATAURL=flat;console.log('BG flattened to JPEG, len='+flat.length);});
+      flattenPngAsync(bg).then(function(flat){BG_IMAGE_DATAURL=flat;applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');console.log('BG ready');});
     }
     // Load Head logo.png and override LOGO_DATAURL
     var logo=await loadFileFromElements(elemId,"Head logo.png");
