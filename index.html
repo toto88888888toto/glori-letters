@@ -411,7 +411,8 @@ var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506
 var LOGO_PATH="LOGO/New-logo.png";
 var LOGO_DATAURL=null;
 var LOGO_WM_DATAURL=null; // opacity-reduced version of logo for watermark
-var BG_IMAGE_DATAURL=null;
+var BG_IMAGE_DATAURL=null; // pre-processed JPEG for PDF
+var BG_IMAGE_RAW=null;    // raw PNG for HTML preview overlay
 var PDF_FONT_READY=false;
 var vatEnabled=false;
 var itemCount=0;
@@ -692,10 +693,10 @@ async function loadBackgroundFromDrive(){
     // Load Background.png
     var bg=await loadFileFromElements(elemId,"Background.jpg")||await loadFileFromElements(elemId,"Background.png");
     if(bg){
-      BG_IMAGE_DATAURL=bg;
-      console.log('BG loaded, length='+bg.length+' type='+bg.substring(0,30));
+      BG_IMAGE_RAW=bg;          // raw PNG for HTML preview overlay (opacity via CSS)
+      BG_IMAGE_DATAURL=bg;      // will be replaced with JPEG after flatten (for PDF)
       applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
-      // Pre-flatten PNG to JPEG for jsPDF (async, replaces BG_IMAGE_DATAURL when ready)
+      // Pre-flatten PNG to JPEG for jsPDF only (async)
       flattenPngAsync(bg).then(function(flat){BG_IMAGE_DATAURL=flat;applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');console.log('BG ready');});
     }
     // Load Head logo.png and override LOGO_DATAURL
@@ -703,11 +704,6 @@ async function loadBackgroundFromDrive(){
     if(logo){
       LOGO_DATAURL=logo;
       renderDelivery();renderContract();renderQI();
-      // Pre-process logo at same opacity for watermark fallback
-      flattenPngAsync(logo).then(function(flat){
-        LOGO_WM_DATAURL=flat;
-        applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
-      });
     }
   }catch(e){console.warn("Elements load failed:",e);}
 }
@@ -1098,17 +1094,18 @@ function renderQI(){
 function applyPreviewBg(elId){
   var container=document.getElementById(elId);
   if(!container)return;
-  // Remove any old overlay divs from previous approach
-  var old=container.querySelector('.wm-overlay');if(old)old.remove();
-  // Set background directly on .letter element — content always renders above its own background
-  var el=container.querySelector('.letter')||container;
-  var imgSrc=BG_IMAGE_DATAURL||LOGO_WM_DATAURL; // use opacity-reduced versions only
-  if(!imgSrc){el.style.backgroundImage='none';return;}
-  el.style.backgroundImage='url('+imgSrc+')';
-  el.style.backgroundSize='contain';
-  el.style.backgroundPosition='center center';
-  el.style.backgroundRepeat='no-repeat';
-  console.log('BG set on .letter in '+elId+' len='+(imgSrc.length));
+  // Find .letter element inside preview container
+  var letterEl=container.querySelector('.letter')||container;
+  // Remove old overlay if present
+  var old=letterEl.querySelector('.wm-overlay');if(old)old.remove();
+  // Use raw images — opacity controlled via CSS on the overlay div (no pre-processing needed)
+  var imgSrc=BG_IMAGE_RAW||LOGO_DATAURL;
+  if(!imgSrc)return;
+  var wm=document.createElement('div');
+  wm.className='wm-overlay';
+  wm.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('+imgSrc+');background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.50;pointer-events:none;z-index:-1;filter:invert(1);';
+  letterEl.insertBefore(wm,letterEl.firstChild);
+  console.log('WM overlay injected into '+elId);
 }
 function headLogoHTML(){
   if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
