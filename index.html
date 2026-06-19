@@ -38,7 +38,7 @@
     .btn-secondary-l{background:#1a1a2e;color:#fff}
     .btn-outline-l{background:#f0f0f0;color:#333}
     .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
-    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px}
+    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden}
     .letter-logo{text-align:center;margin-bottom:32px}
     .logo-text{font-family:'Poppins',sans-serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
     .letter-body p{margin-bottom:14px}
@@ -756,7 +756,7 @@ function flattenPngAsync(dataUrl){
         // White background
         ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
         // Draw inverted at low opacity so white design becomes subtle gray watermark
-        ctx.globalAlpha=0.10;
+        ctx.globalAlpha=0.15;
         ctx.filter='invert(1)';
         ctx.drawImage(img,0,0);
         ctx.globalAlpha=1.0;
@@ -1091,13 +1091,14 @@ function renderQI(){
 function applyPreviewBg(elId){
   var el=document.getElementById(elId);
   if(!el)return;
+  // Remove old watermark
+  var old=el.querySelector('.wm-overlay');if(old)old.remove();
   if(BG_IMAGE_DATAURL){
-    el.style.backgroundImage='url('+BG_IMAGE_DATAURL+')';
-    el.style.backgroundSize='cover';
-    el.style.backgroundPosition='center';
-    el.style.backgroundRepeat='no-repeat';
-  }else{
-    el.style.backgroundImage='';
+    var wm=document.createElement('img');
+    wm.className='wm-overlay';
+    wm.src=BG_IMAGE_DATAURL;
+    wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.08;pointer-events:none;z-index:0;filter:invert(1);';
+    el.insertBefore(wm,el.firstChild);
   }
 }
 function headLogoHTML(){
