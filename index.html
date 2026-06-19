@@ -38,7 +38,7 @@
     .btn-secondary-l{background:#1a1a2e;color:#fff}
     .btn-outline-l{background:#f0f0f0;color:#333}
     .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
-    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden}
+    .letter{background:#fff;max-width:760px;margin:0 auto;padding:56px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden;isolation:isolate}
     .letter-logo{text-align:center;margin-bottom:32px}
     .logo-text{font-family:'Poppins',sans-serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
     .letter-body p{margin-bottom:14px}
@@ -1098,7 +1098,7 @@ function applyPreviewBg(elId){
     var wm=document.createElement('img');
     wm.className='wm-overlay';
     wm.src=BG_IMAGE_DATAURL;
-    wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;pointer-events:none;z-index:0;filter:invert(1) brightness(0.5);';
+    wm.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.20;pointer-events:none;z-index:-1;filter:invert(1);';
     el.insertBefore(wm,el.firstChild);
   }
 }
