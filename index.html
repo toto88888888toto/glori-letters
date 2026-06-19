@@ -1099,16 +1099,19 @@ function applyPreviewBg(elId){
   var container=document.getElementById(elId);
   if(!container)return;
   var el=container.querySelector('.letter')||container;
-  // Remove old overlay div
+  // Remove old overlay
   var old=el.querySelector('.wm-overlay');if(old)old.remove();
-  // Use pre-processed image (opacity baked in via flattenPngAsync)
-  var imgSrc=BG_IMAGE_DATAURL||LOGO_WM_DATAURL;
+  // Use raw images — CSS filter on <img> element is fully supported in Safari (unlike canvas filter)
+  var imgSrc=BG_IMAGE_RAW||LOGO_DATAURL;
   if(!imgSrc)return;
-  el.style.backgroundImage='url('+imgSrc+')';
-  el.style.backgroundSize='contain';
-  el.style.backgroundPosition='center center';
-  el.style.backgroundRepeat='no-repeat';
-  console.log('WM bg-image set on .letter in '+elId);
+  var wm=document.createElement('img');
+  wm.className='wm-overlay';
+  wm.src=imgSrc;
+  // CSS filter on HTML element: invert(1) makes white design dark; opacity controls strength
+  // z-index:-1 inside isolation:isolate parent = above parent background, below all text
+  wm.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:70%;max-height:80%;width:auto;height:auto;opacity:0.50;pointer-events:none;z-index:-1;filter:invert(1);';
+  el.insertBefore(wm,el.firstChild);
+  console.log('WM img inserted into '+elId+' src len='+(imgSrc?imgSrc.length:0));
 }
 function headLogoHTML(){
   if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
