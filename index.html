@@ -311,6 +311,7 @@ var LANG={
     insp:function(subject,phone){return "<strong>Inspection:</strong> Upon receiving the <strong>"+subject+"</strong>, please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team or contact our customer service at "+phone+".";},
     sig:"<strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt.",
     conf:"<strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. A copy will be provided for your records.",
+    postDelivery:function(subject,company){return "Should you have any questions regarding your "+subject+", or if you need assistance with assembly or care instructions, please don't hesitate to reach out to our customer support team. We are committed to ensuring your satisfaction.";},
     thanks:function(company){return "Thank you for choosing <strong>"+company+"</strong>. We value your business and look forward to serving you again.";},
     receipt:"Delivery Receipt (for signature)",sincerely:"Sincerely,",
     contractTitle:"SALES CONTRACT",contractNo:"Contract No.:",dateLabel:"Date:",
@@ -330,6 +331,7 @@ var LANG={
     insp:function(subject,phone){return "<strong>ກວດສອບສິນຄ້າ:</strong> ເມື່ອໄດ້ຮັບ <strong>"+subject+"</strong> ກະລຸນາກວດສອບຄວາມເສຍຫາຍ. ຫາກພົບບັນຫາ ໃຫ້ແຈ້ງທີມຈັດສົ່ງ ຫຼື ຕິດຕໍ່ "+phone+".";},
     sig:"<strong>ລາຍເຊັນລູກຄ້າ:</strong> ຕ້ອງການລາຍເຊັນຈາກທ່ານ ຫຼື ຜູ້ຕາງໜ້າ ເມື່ອຮັບສິນຄ້າ.",
     conf:"<strong>ຢືນຢັນການຈັດສົ່ງ:</strong> ທີມຈັດສົ່ງຈະໃຫ້ໃບຮັບສິນຄ້າລົງລາຍເຊັນ ແລະ ສົ່ງສຳເນົາໃຫ້ທ່ານ.",
+    postDelivery:function(subject,company){return "ຫາກທ່ານມີຄຳຖາມໃດໆກ່ຽວກັບ "+subject+" ກະລຸນາຕິດຕໍ່ "+company+" ພວກເຮົາພ້ອມໃຫ້ການຊ່ວຍເຫຼືອທ່ານ.";},
     thanks:function(company){return "ຂໍຂອບໃຈທີ່ທ່ານໄວ້ວາງໃຈ <strong>"+company+"</strong>. ພວກເຮົາຍິນດີໃຫ້ບໍລິການທ່ານໃນໂອກາດຕໍ່ໄປ.";},
     receipt:"ໃບຮັບສິນຄ້າ (ສຳລັບລາຍເຊັນ)",sincerely:"ດ້ວຍຄວາມນັບຖື,",
     contractTitle:"ສັນຍາການຊື້ຂາຍ",contractNo:"ເລກທີສັນຍາ:",dateLabel:"ວັນທີ:",
@@ -362,6 +364,7 @@ var LANG={
     insp:function(subject,phone){return "<strong>Inspection:</strong> Upon receiving the <strong>"+subject+"</strong>, please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team immediately or contact our customer service at "+phone+".";},
     sig:"<strong>Customer Signature:</strong> A signature from you or an authorized representative is required upon receipt.",
     conf:"<strong>Delivery Confirmation:</strong> The delivery team will present you with a receipt for your signature. A copy will be provided for your records.",
+    postDelivery:function(subject,company){return "Should you have any questions regarding your "+subject+", or if you need assistance with assembly or care instructions, please don't hesitate to reach out to our customer support team. We are committed to ensuring your satisfaction.";},
     thanks:function(company){return "Thank you for choosing <strong>"+company+"</strong>. We value your business and look forward to serving you again.";},
     receipt:"Delivery Receipt (for signature)",sincerely:"Sincerely,",
     contractTitle:"SALES CONTRACT",contractNo:"Contract No.:",dateLabel:"Date:",
@@ -383,6 +386,7 @@ var LANG={
     insp:function(subject,phone){return "<strong>ກວດສອບສິນຄ້າ:</strong> ເມື່ອໄດ້ຮັບ <strong>"+subject+"</strong> ກະລຸນາກວດສອບຄວາມເສຍຫາຍຂອງສິນຄ້າ. ຫາກພົບບັນຫາ ໃຫ້ແຈ້ງທີມຈັດສົ່ງທັນທີ ຫຼື ຕິດຕໍ່ຝ່າຍບໍລິການລູກຄ້າ "+phone+".";},
     sig:"<strong>ລາຍເຊັນລູກຄ້າ:</strong> ຕ້ອງການລາຍເຊັນຈາກທ່ານ ຫຼື ຜູ້ຕາງໜ້າທີ່ໄດ້ຮັບອຳນາດ ເມື່ອຮັບສິນຄ້າ.",
     conf:"<strong>ຢືນຢັນການຈັດສົ່ງ:</strong> ທີມຈັດສົ່ງຈະສົ່ງໃບຮັບສິນຄ້າໃຫ້ທ່ານລົງລາຍເຊັນ ແລະ ຈະໃຫ້ສຳເນົາໄວ້ເປັນຫຼັກຖານ.",
+    postDelivery:function(subject,company){return "ຫາກທ່ານມີຄຳຖາມໃດໆກ່ຽວກັບ "+subject+" ກະລຸນາຕິດຕໍ່ "+company+" ພວກເຮົາພ້ອມໃຫ້ການຊ່ວຍເຫຼືອທ່ານ.";},
     thanks:function(company){return "ຂໍຂອບໃຈທີ່ທ່ານໄວ້ວາງໃຈ <strong>"+company+"</strong>. ພວກເຮົາຍິນດີໃຫ້ບໍລິການທ່ານໃນໂອກາດຕໍ່ໄປ.";},
     receipt:"ໃບຮັບສິນຄ້າ (ສຳລັບລາຍເຊັນ)",sincerely:"ດ້ວຍຄວາມນັບຖື,",
     contractTitle:"ສັນຍາການຊື້ຂາຍ",contractNo:"ເລກທີສັນຍາ:",dateLabel:"ວັນທີ:",
@@ -729,59 +733,108 @@ async function uploadPdfToDriveFolder(folderName,fileName,pdfBase64){
 }
 
 function generateDeliveryPdfBase64(){
+  var T=LANG[currentLang];
   if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:"mm",format:"a4"});
   if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
   function sf(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
-  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=20,R=20,y=18;
-  var dark=[40,40,40],mid=[100,100,100];
-  // Background image (full page, drawn first)
-  if(BG_IMAGE_DATAURL){try{var bgFmt=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgFmt,0,0,W,H);}catch(e){console.warn("BG draw failed",e);}}
-  // Logo
-  if(LOGO_DATAURL){try{var p=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(50/p.width,20/p.height);doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",L,y,p.width*sc,p.height*sc);}catch(e){}}
-  // Company header
-  doc.setFontSize(16);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("GLORI CREATIVITY SOLE.,LTD",W/2,y+8,{align:"center"});
-  doc.setFontSize(9);sf("normal");doc.setTextColor.apply(doc,mid);
-  doc.text("customer_sv@glori-cre.org  |  +856 20 95577556",W/2,y+15,{align:"center"});
-  y+=28;
-  doc.setDrawColor(200,200,200);doc.setLineWidth(0.5);doc.line(L,y,W-R,y);y+=10;
-  // Title
-  doc.setFontSize(14);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("DELIVERY LETTER",W/2,y,{align:"center"});y+=12;
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=22,R=22,y=14;
+  var TW=W-L-R;
+  var dark=[30,30,30],gray=[80,80,80];
+  // Background full page
+  if(BG_IMAGE_DATAURL){try{doc.addImage(BG_IMAGE_DATAURL,BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",0,0,W,H);}catch(e){}}
+  // Head logo centered
+  if(LOGO_DATAURL){
+    try{
+      var p=doc.getImageProperties(LOGO_DATAURL);
+      var maxW=60,maxH=28;
+      var sc=Math.min(maxW/p.width,maxH/p.height);
+      var lw=p.width*sc,lh=p.height*sc;
+      doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",(W-lw)/2,y,lw,lh);
+      y+=lh+8;
+    }catch(e){y+=20;}
+  }else{y+=20;}
+  // Read form values
   var dear=g('d-dear'),qty=g('d-qty'),product=g('d-product'),brand=g('d-brand');
   var dispDate=g('d-dispatchdate'),delDay=g('d-deliveryday'),time=g('d-time');
   var address=g('d-address'),phone=g('d-phone'),email=g('d-email');
   var sender=g('d-sender'),position=g('d-position'),company=g('d-company');
   var sphone=g('d-sphone'),semail=g('d-semail');
   var subject=qty+' sets of '+product+' ('+brand+')';
-  var TW=W-L-R;
-  function line2(label,val){doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(label+": ",L,y);doc.setFontSize(10);sf("normal");doc.text(val,L+doc.getTextWidth(label+": "),y);y+=7;}
-  function para(txt){doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);var lines=doc.splitTextToSize(txt,TW);doc.text(lines,L,y);y+=lines.length*5.5+3;}
-  line2("Dear",dear);
-  line2("Subject",subject);
-  y+=3;
-  doc.setDrawColor(220,220,220);doc.line(L,y,W-R,y);y+=7;
-  para("We are pleased to inform you that your order for "+subject+" has been successfully dispatched and is scheduled for delivery on "+dispDate+". This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.");
-  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("Delivery Details:",L,y);y+=6;
-  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);
-  ["Delivery Date: "+delDay,"Time Window: "+time,"Shipping Address: "+address].forEach(function(t){var lines=doc.splitTextToSize(t,TW-6);doc.text(lines,L+4,y);y+=lines.length*5.5+2;});
-  y+=2;
-  para("Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at "+phone+" or "+email+" as soon as possible.");
-  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text("Instructions for Receiving the Delivery:",L,y);y+=7;
-  [["Inspection:","Upon receiving the "+subject+", please inspect the items for any visible damage. Should you notice any issues, please notify the delivery team immediately or contact our customer service at "+phone+"."],["Customer Signature:","A signature from you or an authorized representative is required upon receipt."],["Delivery Confirmation:","The delivery team will present you with a receipt for your signature. A copy will be provided to you for your records."]].forEach(function(kv){doc.setFontSize(9.5);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(kv[0],L+4,y);doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);var lines=doc.splitTextToSize(kv[1],TW-doc.getTextWidth(kv[0])-8);doc.text(kv[1].slice(0,0),L+4+doc.getTextWidth(kv[0]+" "),y);var wrapped=doc.splitTextToSize(kv[1],TW-10);doc.text(wrapped,L+6,y+5.5);y+=wrapped.length*5.5+9;});
-  para("Thank you for choosing "+company+". We value your business and look forward to serving you again.");
-  y+=8;
-  // Signature block
-  doc.setFontSize(9.5);sf("normal");doc.setTextColor(60,60,60);doc.text("Sincerely,",L,y);y+=14;
-  doc.setDrawColor(80,80,80);doc.line(L,y,L+60,y);y+=5;
-  doc.setFontSize(10);sf("bold");doc.setTextColor.apply(doc,dark);doc.text(sender,L,y);y+=5;
-  doc.setFontSize(9);sf("normal");doc.setTextColor(60,60,60);doc.text(position,L,y);y+=5;
-  doc.text(company,L,y);y+=5;
-  doc.text(sphone+"  |  "+semail,L,y);
-  // Receipt line at bottom
-  var H=doc.internal.pageSize.getHeight();
-  doc.setDrawColor(200,200,200);doc.line(L,H-25,W-R,H-25);
-  doc.setFontSize(8);doc.setTextColor(120,120,120);doc.text("Delivery Receipt (Signature): ____________________________   Date: _______________",L,H-18);
+  var subjectS=qty+' '+product+' ('+brand+')';
+  // Helpers
+  function nl(){y+=5;}
+  function para(txt,sz,style,color){
+    sz=sz||10;style=style||"normal";color=color||gray;
+    doc.setFontSize(sz);sf(style);doc.setTextColor(color[0],color[1],color[2]);
+    var lines=doc.splitTextToSize(txt,TW);
+    doc.text(lines,L,y);y+=lines.length*5.8;
+  }
+  function boldPara(label,txt,sz){
+    sz=sz||10;
+    doc.setFontSize(sz);sf("bold");doc.setTextColor(dark[0],dark[1],dark[2]);
+    var lw=doc.getTextWidth(label+" ");
+    doc.text(label,L,y);
+    sf("normal");doc.setTextColor(gray[0],gray[1],gray[2]);
+    var lines=doc.splitTextToSize(txt,TW-lw);
+    doc.text(lines[0],L+lw,y);
+    if(lines.length>1){y+=5.8;var rest=doc.splitTextToSize(lines.slice(1).join(" "),TW);doc.text(rest,L,y);y+=rest.length*5.8;}
+    else y+=5.8;
+  }
+  function sectionTitle(txt){
+    nl();doc.setFontSize(10);sf("bold");doc.setTextColor(dark[0],dark[1],dark[2]);
+    doc.text(txt,L,y);y+=6;
+  }
+  // Dear / Subject
+  boldPara(T.dearLabel,dear,10);
+  nl();
+  boldPara(T.subjectLabel,subject,10);
+  nl();
+  // Body paragraph 1
+  var p1txt="We are pleased to inform you that your order for "+subject+" has been successfully dispatched and is scheduled for delivery on "+dispDate+". This letter serves as confirmation of the scheduled delivery and provides you with important details regarding the process.";
+  if(currentLang==='lo')p1txt=T.p1(subject,dispDate).replace(/<[^>]+>/g,'');
+  para(p1txt);nl();
+  // Delivery Details
+  sectionTitle(T.deliveryDetails);
+  para(T.deliveryDate+" "+delDay);
+  para(T.timeWindow+" "+time);
+  var addrLines=doc.splitTextToSize(T.shippingAddress+" "+address,TW);
+  doc.setFontSize(10);sf("normal");doc.setTextColor(gray[0],gray[1],gray[2]);doc.text(addrLines,L,y);y+=addrLines.length*5.8;
+  nl();
+  var p3txt="Please ensure that someone is available at the delivery address to sign for the items upon receipt. If the scheduled time or delivery address requires any adjustments, kindly contact us at "+phone+" or "+email+" as soon as possible to make arrangements.";
+  if(currentLang==='lo')p3txt=T.p3(phone,email);
+  para(p3txt);nl();
+  // Instructions
+  sectionTitle(T.instrTitle);
+  var inspTxt="Upon receiving the "+subject+", we kindly ask you to inspect the items for any visible damage or discrepancies. Should you notice any issues, please notify the delivery team immediately or contact our customer service at "+phone+".";
+  if(currentLang==='lo')inspTxt=T.insp(subject,phone).replace(/<[^>]+>/g,'');
+  boldPara("Inspection:",inspTxt);nl();
+  var sigTxt="In order to complete the delivery process, we will require a signature from you or an authorized representative upon receipt of the goods. If you are not available, we kindly request that you make arrangements for someone to sign on your behalf.";
+  if(currentLang==='lo')sigTxt=T.sig.replace(/<[^>]+>/g,'');
+  boldPara("Customer Signature:",sigTxt);nl();
+  var confTxt="The delivery team will present you with a receipt for your signature. Once signed, the delivery will be officially complete. A copy of this receipt will be provided to you for your records.";
+  if(currentLang==='lo')confTxt=T.conf.replace(/<[^>]+>/g,'');
+  boldPara("Delivery Confirmation:",confTxt);nl();
+  var postTxt="Should you have any questions regarding your "+subjectS+", or if you need assistance with assembly or care instructions, please don't hesitate to reach out to our customer support team. We are committed to ensuring your satisfaction and will be happy to assist with any inquiries you may have.";
+  boldPara("Post-Delivery Support:",postTxt);nl();
+  // Thank you
+  var thanksTxt="Thank you for choosing "+company+" for your purchase. We value your business and look forward to serving you again in the future.";
+  para(thanksTxt);
+  // Delivery Receipt line
+  nl();nl();
+  doc.setFontSize(10);sf("normal");doc.setTextColor(gray[0],gray[1],gray[2]);
+  doc.text(T.receipt,W-R,y,{align:"right"});y+=6;
+  doc.setDrawColor(150,150,150);doc.setLineWidth(0.4);doc.line(W-R-55,y,W-R,y);
+  y+=12;
+  // Sincerely
+  doc.setFontSize(10);sf("normal");doc.setTextColor(gray[0],gray[1],gray[2]);doc.text(T.sincerely,L,y);y+=10;
+  doc.setFontSize(10);sf("bold");doc.setTextColor(dark[0],dark[1],dark[2]);doc.text(sender,L,y);y+=6;
+  doc.setFontSize(10);sf("normal");doc.setTextColor(gray[0],gray[1],gray[2]);
+  doc.text(position,L,y);y+=5.5;
+  doc.text(company,L,y);y+=5.5;
+  doc.text(sphone,L,y);y+=5.5;
+  doc.text(semail,L,y);
   return doc.output("datauristring").split(",")[1];
 }
 
@@ -1039,6 +1092,7 @@ function renderDelivery(){
     '<p>'+T.insp(subject,phone)+'</p>'+
     '<p>'+T.sig+'</p>'+
     '<p>'+T.conf+'</p>'+
+    '<p>'+T.postDelivery(subject,company)+'</p>'+
     '<p>'+T.thanks(company)+'</p>'+
     '</div>'+
     '<div style="margin-top:48px"><div class="receipt-line">'+T.receipt+'</div>'+
