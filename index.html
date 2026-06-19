@@ -1090,19 +1090,19 @@ function renderQI(){
 
 /* === LETTER SECTION === */
 function applyPreviewBg(elId){
-  var el=document.getElementById(elId);
-  if(!el)return;
-  var old=el.querySelector('.wm-overlay');if(old)old.remove();
+  var container=document.getElementById(elId);
+  if(!container)return;
+  // Remove any old overlay divs from previous approach
+  var old=container.querySelector('.wm-overlay');if(old)old.remove();
+  // Set background directly on .letter element — content always renders above its own background
+  var el=container.querySelector('.letter')||container;
   var imgSrc=BG_IMAGE_DATAURL||LOGO_DATAURL;
-  if(!imgSrc)return;
-  // Use a <div> with background-image (more reliable than <img> for z-index layering)
-  var wm=document.createElement('div');
-  wm.className='wm-overlay';
-  var bgStyle='background-image:url('+imgSrc+');background-size:50%;background-position:center;background-repeat:no-repeat;';
-  if(BG_IMAGE_DATAURL&&BG_IMAGE_DATAURL.startsWith('data:image/jpeg'))bgStyle='background-image:url('+imgSrc+');background-size:cover;background-position:center;';
-  wm.style.cssText='position:absolute;top:0;left:0;right:0;bottom:0;'+bgStyle+'opacity:0.12;pointer-events:none;z-index:-1;filter:invert(1);';
-  el.insertBefore(wm,el.firstChild);
-  console.log('Watermark injected into '+elId+' src length='+(imgSrc?imgSrc.length:0));
+  if(!imgSrc){el.style.backgroundImage='none';return;}
+  el.style.backgroundImage='url('+imgSrc+')';
+  el.style.backgroundSize='55%';
+  el.style.backgroundPosition='center center';
+  el.style.backgroundRepeat='no-repeat';
+  console.log('BG set on .letter in '+elId+' len='+(imgSrc.length));
 }
 function headLogoHTML(){
   if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
