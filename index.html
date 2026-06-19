@@ -689,7 +689,7 @@ async function loadBackgroundFromDrive(){
     if(!d1.files||!d1.files.length)return;
     var elemId=d1.files[0].id;
     // Load Background.png
-    var bg=await loadFileFromElements(elemId,"Background.png");
+    var bg=await loadFileFromElements(elemId,"Background.jpg")||await loadFileFromElements(elemId,"Background.png");
     if(bg){
       BG_IMAGE_DATAURL=bg;
       applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
@@ -744,7 +744,8 @@ function flattenPngToJpeg(dataUrl){
   return dataUrl;
 }
 function flattenPngAsync(dataUrl){
-  // Returns a Promise that resolves to a white-background JPEG dataUrl
+  // Returns a Promise that resolves to a white-background JPEG watermark
+  // Inverts + reduces opacity so white-on-transparent design becomes subtle dark-on-white watermark
   return new Promise(function(resolve){
     var img=new Image();
     img.onload=function(){
@@ -752,9 +753,15 @@ function flattenPngAsync(dataUrl){
         var c=document.createElement('canvas');
         c.width=img.naturalWidth;c.height=img.naturalHeight;
         var ctx=c.getContext('2d');
+        // White background
         ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
+        // Draw inverted at low opacity so white design becomes subtle gray watermark
+        ctx.globalAlpha=0.10;
+        ctx.filter='invert(1)';
         ctx.drawImage(img,0,0);
-        resolve(c.toDataURL('image/jpeg',0.85));
+        ctx.globalAlpha=1.0;
+        ctx.filter='none';
+        resolve(c.toDataURL('image/jpeg',0.90));
       }catch(e){resolve(dataUrl);}
     };
     img.onerror=function(){resolve(dataUrl);};
