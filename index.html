@@ -409,6 +409,7 @@ function setLang(lang){
 }
 var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
 var LOGO_PATH="LOGO/Head logo.png";
+var BG_PATH="LOGO/Background.png";
 var LOGO_DATAURL=null;
 var BG_IMAGE_DATAURL=null;
 var PDF_FONT_READY=false;
@@ -434,6 +435,16 @@ function generateNextDocNo(docType){
   return prefix+String(maxNo+1).padStart(4,"0");
 }
 
+async function loadLocalBgDataURL(){
+  try{
+    var res=await fetch(BG_PATH,{cache:"no-store"});
+    if(!res.ok)throw new Error("BG not found");
+    var blob=await res.blob();
+    var raw=await new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(String(r.result));};r.onerror=reject;r.readAsDataURL(blob);});
+    BG_IMAGE_DATAURL=await flattenPngAsync(raw);
+    applyPreviewBg('delivery-preview');applyPreviewBg('contract-preview');applyPreviewBg('qi-preview');
+  }catch(e){BG_IMAGE_DATAURL=null;}
+}
 async function loadLocalLogoDataURL(){
   try{
     var res=await fetch(LOGO_PATH,{cache:"no-store"});
@@ -1184,6 +1195,7 @@ window.addEventListener("load",async function(){
   $id("docDate").valueAsDate=new Date();
   await loadPdfFonts();
   await loadLocalLogoDataURL();
+  await loadLocalBgDataURL();
   $id("docNo").value=generateNextDocNo($id("docType").value);
   $id("docType").addEventListener("change",function(){$id("docNo").value=generateNextDocNo($id("docType").value);});
   $id("addBtn").addEventListener("click",function(){addItem();renumberItems();});
