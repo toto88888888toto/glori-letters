@@ -1096,10 +1096,10 @@ function applyPreviewBg(elId){
   var old=container.querySelector('.wm-overlay');if(old)old.remove();
   // Set background directly on .letter element — content always renders above its own background
   var el=container.querySelector('.letter')||container;
-  var imgSrc=BG_IMAGE_DATAURL||LOGO_DATAURL;
+  var imgSrc=BG_IMAGE_DATAURL;
   if(!imgSrc){el.style.backgroundImage='none';return;}
   el.style.backgroundImage='url('+imgSrc+')';
-  el.style.backgroundSize='contain';
+  el.style.backgroundSize='cover';
   el.style.backgroundPosition='center center';
   el.style.backgroundRepeat='no-repeat';
   console.log('BG set on .letter in '+elId+' len='+(imgSrc.length));
