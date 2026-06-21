@@ -408,7 +408,7 @@ function setLang(lang){
   renderDelivery();renderContract();
 }
 var FOOTER_CONTACT=["Call or WhatsApp:","+856 20 95 577 556","+856 20 58 451 506","Email: customer_sv@glori-cre.org"];
-var LOGO_PATH="LOGO/New-logo.png";
+var LOGO_PATH="LOGO/Head logo.png";
 var LOGO_DATAURL=null;
 var BG_IMAGE_DATAURL=null;
 var PDF_FONT_READY=false;
@@ -1033,7 +1033,7 @@ function renderQI(){
   var isLak=currency==='LAK';
   var nf=new Intl.NumberFormat('en-US',{minimumFractionDigits:isLak?0:2,maximumFractionDigits:isLak?0:2});
   function mn(n){return nf.format(Number(n)||0);}
-  var logoHTML=LOGO_DATAURL?('<img src="'+LOGO_DATAURL+'" style="max-height:54px;max-width:110px;object-fit:contain"/>'):'<img src="LOGO/New-logo.png" style="max-height:54px;max-width:110px;object-fit:contain"/>';
+  var logoHTML=LOGO_DATAURL?('<img src="'+LOGO_DATAURL+'" style="max-height:54px;max-width:110px;object-fit:contain"/>'):'<img src="LOGO/Head logo.png" style="max-height:54px;max-width:110px;object-fit:contain"/>';
   var metaHTML=[
     [(docType==='Invoice'?'Invoice No':'Quotation No'),docNo],
     [(docType==='Invoice'?'Invoice Date':'Quotation Date'),docDate],
