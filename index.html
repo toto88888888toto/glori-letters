@@ -796,7 +796,7 @@ function generateDeliveryPdfBase64(){
   if(LOGO_DATAURL){
     try{
       var p=doc.getImageProperties(LOGO_DATAURL);
-      var maxW=60,maxH=28;
+      var maxW=80,maxH=38;
       var sc=Math.min(maxW/p.width,maxH/p.height);
       var lw=p.width*sc,lh=p.height*sc;
       doc.addImage(LOGO_DATAURL,LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG",(W-lw)/2,y,lw,lh);
@@ -1116,7 +1116,7 @@ function applyPreviewBg(elId){
   console.log('BG set on .letter in '+elId+' len='+(imgSrc.length));
 }
 function headLogoHTML(){
-  if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:90px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
+  if(LOGO_DATAURL)return '<div style="width:100%;margin-bottom:20px"><img src="'+LOGO_DATAURL+'" style="max-height:130px;max-width:100%;object-fit:contain;display:block;margin:0 auto"/></div>';
   return '<div class="letter-logo"><div class="logo-text">Glori</div></div>';
 }
 function copyLetter(id){navigator.clipboard.writeText(document.getElementById(id).innerText).then(function(){alert('Copied to clipboard!');});}
