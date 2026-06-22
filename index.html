@@ -677,13 +677,22 @@ async function saveLocal(){
     renderSavedList();
     var pdfResult=generatePdf(payload);
     downloadPdfBase64(pdfResult.base64,pdfResult.name);
-    // Upload to Drive silently only if already signed in
-    if(accessToken){
-      try{
-        var docType=(payload.docType||"Quotation");
-        await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);
-      }catch(e){console.warn("Drive upload skipped:",e);}
-    }
+    // Upload to Drive silently (no popup)
+    try{
+      var docType=(payload.docType||"Quotation");
+      if(tokenClient){
+        await new Promise(function(resolve){
+          var prev=tokenClient.callback;
+          tokenClient.callback=function(resp){
+            tokenClient.callback=prev;
+            if(resp&&resp.access_token){accessToken=resp.access_token;}
+            resolve();
+          };
+          tokenClient.requestAccessToken({prompt:""});
+        });
+      }
+      if(accessToken){await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);}
+    }catch(e){console.warn("Drive upload skipped:",e);}
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
 }
