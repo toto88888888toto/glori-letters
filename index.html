@@ -117,6 +117,27 @@
       .preview-panel{padding:0;background:#fff;overflow:visible}
       .letter{box-shadow:none;padding:.5in .75in;max-width:100%;margin:0}
     }
+  
+    /* ── Right Saved Sidebar ── */
+    #saved-sidebar{position:fixed;right:0;top:94px;bottom:0;width:270px;background:#fff;border-left:1px solid #e0e0e0;overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+    #saved-sidebar-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f0f0f0;flex-shrink:0}
+    #saved-sidebar-header span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#888;font-weight:700;font-family:'Poppins',sans-serif}
+    #saved-sidebar-list{flex:1;overflow-y:auto;padding:10px 12px}
+    .sv-card{background:#f8f9fb;border:1px solid rgba(17,24,39,.09);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:transform .15s,box-shadow .15s;animation:slideDown .25s ease}
+    .sv-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.09)}
+    .sv-card-docno{font-weight:800;font-size:.82rem;color:#1a1a2e;font-family:'Poppins',sans-serif}
+    .sv-card-type{font-size:.7rem;color:#e94560;font-weight:700;text-transform:uppercase;margin-bottom:2px}
+    .sv-card-project{font-size:.75rem;color:#666;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sv-card-actions{display:flex;gap:6px;margin-top:8px}
+    .sv-card-actions button{flex:1;padding:5px 0;border:1px solid rgba(17,24,39,.12);border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;background:#fff;font-family:'Poppins',sans-serif;transition:background .15s}
+    .sv-card-actions .sv-load{color:#1a1a2e}.sv-card-actions .sv-load:hover{background:#1a1a2e;color:#fff}
+    .sv-card-actions .sv-edit{color:#2563eb}.sv-card-actions .sv-edit:hover{background:#2563eb;color:#fff}
+    .sv-card-actions .sv-del{color:#e94560}.sv-card-actions .sv-del:hover{background:#e94560;color:#fff}
+    .sv-empty{text-align:center;color:#bbb;font-size:.8rem;padding:30px 0;font-family:'Poppins',sans-serif}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    /* push main content left so sidebar doesn't overlap */
+    .letter-page{margin-right:270px}
+
   </style>
 </head>
 <body>
@@ -138,6 +159,14 @@
   <button class="tab-btn" data-tab="invoice" onclick="switchTab('invoice')">&#129534; Invoice</button>
   <button class="tab-btn" data-tab="delivery" onclick="switchTab('delivery')">&#128230; Delivery Letter</button>
   <button class="tab-btn" data-tab="contract" onclick="switchTab('contract')">&#128195; Sales Contract</button>
+</div>
+
+<div id="saved-sidebar">
+  <div id="saved-sidebar-header">
+    <span>&#128196; Saved Docs</span>
+    <span id="saved-count" style="font-size:.7rem;background:#e94560;color:#fff;border-radius:99px;padding:1px 8px;font-weight:700;font-family:'Poppins',sans-serif">0</span>
+  </div>
+  <div id="saved-sidebar-list"><div class="sv-empty">No saved documents yet</div></div>
 </div>
 
 <!-- QUOTATION / INVOICE PAGE -->
@@ -643,7 +672,35 @@ function loadDocToForm(docRow){
 function showSaved(show){$id("savedCard").style.display=show?"block":"none";}
 
 function renderSavedList(){
-  var list=$id("savedList");var rows=dbLoadAll();
+  // Update old inline list if exists
+  var list=$id("savedList");
+  if(list)list.innerHTML='';
+  // Update sidebar
+  var sidebar=$id("saved-sidebar-list");
+  var rows=dbLoadAll();
+  var countEl=$id("saved-count");if(countEl)countEl.textContent=rows.length;
+  if(!rows.length){
+    if(sidebar)sidebar.innerHTML='<div class="sv-empty">No saved documents yet</div>';
+    return;
+  }
+  if(sidebar){
+    sidebar.innerHTML='';
+    rows.forEach(function(docRow){
+      var card=document.createElement("div");card.className="sv-card";
+      card.innerHTML='<div class="sv-card-type">'+(docRow.docType||"")+'</div>'
+        +'<div class="sv-card-docno">'+(docRow.docNo||"—")+'</div>'
+        +'<div class="sv-card-project">'+(docRow.project||"—")+'</div>'
+        +'<div class="sv-card-actions">'
+        +'<button class="sv-load">View</button>'
+        +'<button class="sv-edit">Edit</button>'
+        +'<button class="sv-del">Delete</button>'
+        +'</div>';
+      card.querySelector(".sv-load").addEventListener("click",function(e){e.stopPropagation();loadDocToForm(docRow);showSaved(false);});
+      card.querySelector(".sv-edit").addEventListener("click",function(e){e.stopPropagation();editingDocId=docRow._id;loadDocToForm(docRow);showSaved(false);$id("saveBtn").textContent="Update";});
+      card.querySelector(".sv-del").addEventListener("click",function(e){e.stopPropagation();if(confirm("Delete "+docRow.docNo+"?")){dbDelete(docRow._id);renderSavedList();}});
+      sidebar.appendChild(card);
+    });
+  }
   if(!rows.length){list.innerHTML='<div class="muted">No saved documents yet.</div>';return;}
   list.innerHTML="";
   rows.forEach(function(docRow){
