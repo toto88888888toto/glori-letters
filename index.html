@@ -208,8 +208,9 @@
     <div class="field-l"><label>Bank Name</label><input id="bankName" placeholder="e.g. BCEL / ACLEDA" oninput="renderQI()"/></div>
     <div class="field-l"><label>Account Name</label><input id="accountName" placeholder="e.g. Glori Creativity Sole Co.,Ltd" oninput="renderQI()"/></div>
     <div class="field-l"><label>Account Number</label><input id="accountNumber" placeholder="e.g. 010-xxx-xxxxxxx" oninput="renderQI()"/></div>
-    <div class="btn-row">
-      <button class="btn-l btn-primary-l" id="saveBtn" style="width:100%">&#128190; Save</button>
+    <div class="btn-row" style="gap:8px">
+      <button class="btn-l btn-outline-l" id="newBtn" style="flex:0 0 auto;padding:10px 16px" title="New document">&#10010; New</button>
+      <button class="btn-l btn-primary-l" id="saveBtn" style="flex:1">&#128190; Save</button>
     </div>
     <div id="savedCard" style="display:none;margin-top:16px;border:1px solid #eee;border-radius:10px;padding:16px">
       <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:10px;font-weight:700;font-family:'Poppins',sans-serif">Saved Documents</div>
@@ -574,6 +575,26 @@ function addItem(prefill){
   recalc();
 }
 
+function resetForm(){
+  editingDocId=null;
+  var sb=$id("saveBtn");if(sb)sb.textContent="💾 Save";
+  $id("docType").value="Quotation";
+  $id("docNo").value=generateNextDocNo("Quotation");
+  $id("docDate").valueAsDate=new Date();
+  $id("project").value="";
+  $id("currency").value="LAK";
+  $id("customerName").value="";
+  $id("attentionTo").value="";
+  $id("address").value="";
+  $id("contact").value="";
+  $id("discount").value=0;
+  $id("advancePercent").value=0;
+  $id("bankName").value="";$id("accountName").value="";$id("accountNumber").value="";
+  var bp=$id("bankPreset");if(bp)bp.selectedIndex=0;
+  ["bankName","accountName","accountNumber"].forEach(function(id){var el=document.getElementById(id);if(el){el.readOnly=false;el.style.background="";}});
+  vatEnabled=false;$id("vatBtn").innerText="VAT: OFF";
+  clearItems();addItem();recalc();renderQI();
+}
 function clearItems(){$id("itemsList").innerHTML="";itemCount=0;}
 function renumberItems(){var cards=Array.from(document.querySelectorAll(".item-card"));cards.forEach(function(card,idx){var no=card.querySelector(".item-no");if(no)no.textContent=String(idx+1);card.dataset.idx=String(idx+1);});itemCount=cards.length;}
 
@@ -1307,6 +1328,7 @@ window.addEventListener("load",async function(){
   $id("discount").addEventListener("input",recalc);
   $id("advancePercent").addEventListener("input",recalc);
   $id("saveBtn").addEventListener("click",saveLocal);
+  $id("newBtn").addEventListener("click",function(){if(editingDocId&&!confirm("Discard changes and start new?"))return;resetForm();});
   // sidebar auto-renders
   $id("clearAllBtn").addEventListener("click",function(){if(confirm("Clear ALL saved documents?")){dbClear();renderSavedList();}});
 
