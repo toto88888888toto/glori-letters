@@ -642,13 +642,14 @@ async function saveLocal(){
     else{dbAdd(payload);}
     renderSavedList();
     var pdfResult=generatePdf(payload);
-    // Upload PDF to Drive
-    try{
-      await ensureDriveToken();
-      var docType=(payload.docType||"Quotation");
-      await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);
-      alert("\u2705 Saved!\nPDF downloaded + uploaded to Google Drive > "+docType+" folder.");
-    }catch(e){alert("\u2705 PDF downloaded!\n\u26A0\uFE0F Drive upload failed: "+e.message);}
+    downloadPdfBase64(pdfResult.base64,pdfResult.name);
+    // Upload to Drive silently only if already signed in
+    if(accessToken){
+      try{
+        var docType=(payload.docType||"Quotation");
+        await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);
+      }catch(e){console.warn("Drive upload skipped:",e);}
+    }
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
 }
