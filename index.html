@@ -1260,7 +1260,7 @@ window.addEventListener("load",async function(){
   $id("saveBtn").addEventListener("click",saveLocal);
   // sidebar auto-renders
   $id("clearAllBtn").addEventListener("click",function(){if(confirm("Clear ALL saved documents?")){dbClear();renderSavedList();}});
-  $id("exportBtn").addEventListener("click",exportAllJson);
+
   addItem();
   renderQI();
   renderDelivery();
