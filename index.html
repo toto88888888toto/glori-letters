@@ -155,8 +155,7 @@
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" data-tab="quotation" onclick="switchTab('quotation')">&#128203; Quotation</button>
-  <button class="tab-btn" data-tab="invoice" onclick="switchTab('invoice')">&#129534; Invoice</button>
+  <button class="tab-btn active" data-tab="qinv" onclick="switchTab('qinv')">&#128203; Quotation / Invoice</button>
   <button class="tab-btn" data-tab="delivery" onclick="switchTab('delivery')">&#128230; Delivery Letter</button>
   <button class="tab-btn" data-tab="contract" onclick="switchTab('contract')">&#128195; Sales Contract</button>
 </div>
@@ -293,7 +292,7 @@
 function switchTab(name){
   // Update tab button styles
   document.querySelectorAll('.tab-btn').forEach(function(b){
-    b.classList.toggle('active', b.dataset.tab===name);
+    b.classList.toggle('active', b.dataset.tab===name||(name==='quotation'||name==='invoice')&&b.dataset.tab==='qinv');
   });
   // Hide all pages
   var pages=['page-qinv','page-delivery','page-contract'];
@@ -302,12 +301,9 @@ function switchTab(name){
     if(el) el.style.display='none';
   });
   // Show the right page
-  if(name==='quotation'||name==='invoice'){
+  if(name==='qinv'||name==='quotation'||name==='invoice'){
     var el=document.getElementById('page-qinv');
     if(el) el.style.display='grid';
-    var newType=name==='quotation'?'Quotation':'Invoice';
-    var dtEl=document.getElementById('docType');
-    if(dtEl&&dtEl.value!==newType){dtEl.value=newType;document.getElementById('docNo').value=generateNextDocNo(newType);}
     renderQI();
   }else if(name==='delivery'){
     var el=document.getElementById('page-delivery');
