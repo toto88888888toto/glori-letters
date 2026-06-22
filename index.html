@@ -148,6 +148,7 @@
     <span>Quotation &bull; Invoice &bull; Delivery &bull; Contract</span>
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+    <button id="driveBtn" onclick="connectDrive()" style="padding:5px 14px;border-radius:20px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">&#9729; Connect Drive</button>
     <span style="font-size:.75rem;color:#aaa;font-weight:600">Language:</span>
     <button id="lang-en" onclick="setLang('en')" style="padding:5px 12px;border-radius:20px;border:none;background:#e94560;color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">EN</button>
     <button id="lang-lo" onclick="setLang('lo')" style="padding:5px 12px;border-radius:20px;border:none;background:rgba(255,255,255,0.15);color:#fff;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">ລາວ</button>
@@ -754,10 +755,15 @@ var tokenClient=null,accessToken=null,folderCache={};
 function initGoogleAuth(){
   if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
   if(tokenClient)return true;
-  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(resp){if(resp&&resp.access_token){accessToken=resp.access_token;loadBackgroundFromDrive();}}});
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(resp){if(resp&&resp.access_token){accessToken=resp.access_token;loadBackgroundFromDrive();var db=$id("driveBtn");if(db){db.textContent="✅ Drive Connected";db.style.background="rgba(34,197,94,0.3)";db.onclick=null;db.style.cursor="default";}}
+  }});
   return true;
 }
 
+function connectDrive(){
+  if(!tokenClient){alert("Google auth not ready yet, please wait a moment.");return;}
+  tokenClient.requestAccessToken({prompt:"select_account"});
+}
 function ensureDriveToken(){
   return new Promise(function(resolve,reject){
     if(!initGoogleAuth())return reject(new Error("Google Identity Services not ready. Try again in a moment."));
