@@ -1294,6 +1294,7 @@ window.addEventListener("load",async function(){
   // Populate bank preset dropdown
   var bp=$id("bankPreset");if(bp){BANK_ACCOUNTS.forEach(function(a,i){var o=document.createElement("option");o.value=i;o.textContent=a.label;bp.appendChild(o);});}
   addItem();
+  renderSavedList();
   renderQI();
   renderDelivery();
   renderContract();
