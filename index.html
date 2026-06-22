@@ -667,7 +667,11 @@ async function saveLocal(){
   if(!payload.customerName)return alert("Please enter Customer Name");
   setGenerating(true);
   try{
-    if(editingDocId){dbUpdate(editingDocId,payload);editingDocId=null;$id("saveBtn").textContent="\ud83d\udcbe Save";}
+    if(editingDocId){
+      var origRows=dbLoadAll();var origRow=origRows.find(function(r){return r._id===editingDocId;});
+      if(origRow&&origRow.docType===payload.docType){dbUpdate(editingDocId,payload);}else{dbAdd(payload);}
+      editingDocId=null;$id("saveBtn").textContent="\ud83d\udcbe Save";
+    }
     else{dbAdd(payload);}
     renderSavedList();
     var pdfResult=generatePdf(payload);
