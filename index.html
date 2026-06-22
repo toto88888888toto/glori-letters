@@ -688,7 +688,7 @@ async function saveLocal(){
             if(resp&&resp.access_token){accessToken=resp.access_token;}
             resolve();
           };
-          tokenClient.requestAccessToken({prompt:""});
+          tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
         });
       }
       if(accessToken){await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);}
@@ -764,21 +764,21 @@ var tokenClient=null,accessToken=null,folderCache={};
 function initGoogleAuth(){
   if(!window.google||!google.accounts||!google.accounts.oauth2)return false;
   if(tokenClient)return true;
-  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",callback:function(resp){if(resp&&resp.access_token){accessToken=resp.access_token;loadBackgroundFromDrive();var db=$id("driveBtn");if(db){db.textContent="✅ Drive Connected";db.style.background="rgba(34,197,94,0.3)";db.onclick=null;db.style.cursor="default";}}
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",login_hint:"outamavongsa.toto@gmail.com",callback:function(resp){if(resp&&resp.access_token){accessToken=resp.access_token;loadBackgroundFromDrive();var db=$id("driveBtn");if(db){db.textContent="✅ Drive Connected";db.style.background="rgba(34,197,94,0.3)";db.onclick=null;db.style.cursor="default";}}
   }});
   return true;
 }
 
 function connectDrive(){
   if(!tokenClient){alert("Google auth not ready yet, please wait a moment.");return;}
-  tokenClient.requestAccessToken({prompt:"select_account"});
+  tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
 }
 function ensureDriveToken(){
   return new Promise(function(resolve,reject){
     if(!initGoogleAuth())return reject(new Error("Google Identity Services not ready. Try again in a moment."));
     if(accessToken)return resolve(accessToken);
     tokenClient.callback=function(resp){if(!resp||!resp.access_token)return reject(new Error("No access token returned."));accessToken=resp.access_token;loadBackgroundFromDrive();resolve(accessToken);};
-    tokenClient.requestAccessToken({prompt:""});
+    tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
   });
 }
 
