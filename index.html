@@ -203,6 +203,7 @@
       <div id="balanceDisplay" style="font-weight:800;color:#1a1a2e">Balance Due: 0</div>
     </div>
     <div class="section-title">Bank Details</div>
+    <div class="field-l"><label>Quick Select</label><select id="bankPreset" onchange="applyBankPreset(this)" style="width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:.85rem;background:#fafafa;font-family:inherit"></select></div>
     <div class="field-l"><label>Bank Name</label><input id="bankName" placeholder="e.g. BCEL / ACLEDA" oninput="renderQI()"/></div>
     <div class="field-l"><label>Account Name</label><input id="accountName" placeholder="e.g. Glori Creativity Sole Co.,Ltd" oninput="renderQI()"/></div>
     <div class="field-l"><label>Account Number</label><input id="accountNumber" placeholder="e.g. 010-xxx-xxxxxxx" oninput="renderQI()"/></div>
@@ -441,6 +442,38 @@ var itemCount=0;
 var editingDocId=null;
 
 /* === LOCAL DB === */
+var BANK_ACCOUNTS=[
+  {label:"— Select Bank Account —",bank:"",name:"",no:""},
+  {label:"Private BCEL-LAK",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"TOTO OUTAMAVONGSA Mr.",no:"160120001284464001"},
+  {label:"Private BCEL-THB",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"TOTO OUTAMAVONGSA Mr.",no:"0101210277133"},
+  {label:"Private BCEL-USD",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"TOTO OUTAMAVONGSA Mr.",no:"104120101284464001"},
+  {label:"Private LDB-LAK",bank:"Lao Development Bank (LDB)",name:"TOTO OUTAMAVONGSA Mr.",no:"0300100410060288"},
+  {label:"Private LDB-THB",bank:"Lao Development Bank (LDB)",name:"TOTO OUTAMAVONGSA Mr.",no:"0300402410005244"},
+  {label:"Private LDB-USD",bank:"Lao Development Bank (LDB)",name:"TOTO OUTAMAVONGSA Mr.",no:"0302001410007643"},
+  {label:"Private LDB-CNY",bank:"Lao Development Bank (LDB)",name:"TOTO OUTAMAVONGSA Mr.",no:"0300410410000303"},
+  {label:"BCEL-LAK",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0131233080311"},
+  {label:"BCEL-THB",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0131233080366"},
+  {label:"BCEL-USD",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0131233080432"},
+  {label:"BCEL-CNY",bank:"BANQUE POUR LE COMMERCE EXTERIEUR LAO PUBLIC (BCEL)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0131233080517"},
+  {label:"LDB-LAK",bank:"Lao Development Bank (LDB)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0302000010005299"},
+  {label:"LDB-THB",bank:"Lao Development Bank (LDB)",name:"GLORI CREATIVITY SOLE CO.,LTD",no:"0302002010002426"},
+  {label:"Custom (fill manually)",bank:"",name:"",no:""}
+];
+function applyBankPreset(sel){
+  var idx=Number(sel.value);
+  var acc=BANK_ACCOUNTS[idx];
+  if(!acc||acc.label.startsWith("—")||acc.label==="Custom (fill manually)"){
+    // enable manual editing
+    ["bankName","accountName","accountNumber"].forEach(function(id){var el=document.getElementById(id);if(el){el.readOnly=false;el.style.background="";}});
+    if(acc&&acc.label==="Custom (fill manually)"){document.getElementById("bankName").value="";document.getElementById("accountName").value="";document.getElementById("accountNumber").value="";}
+    return;
+  }
+  document.getElementById("bankName").value=acc.bank;
+  document.getElementById("accountName").value=acc.name;
+  document.getElementById("accountNumber").value=acc.no;
+  ["bankName","accountName","accountNumber"].forEach(function(id){var el=document.getElementById(id);if(el){el.readOnly=true;el.style.background="#f5f5f5";}});
+  renderQI();
+}
 var DB_KEY="quotation_invoice_db_v1";
 function dbLoadAll(){return JSON.parse(localStorage.getItem(DB_KEY)||"[]");}
 function dbSaveAll(rows){localStorage.setItem(DB_KEY,JSON.stringify(rows));}
@@ -1258,6 +1291,8 @@ window.addEventListener("load",async function(){
   // sidebar auto-renders
   $id("clearAllBtn").addEventListener("click",function(){if(confirm("Clear ALL saved documents?")){dbClear();renderSavedList();}});
 
+  // Populate bank preset dropdown
+  var bp=$id("bankPreset");if(bp){BANK_ACCOUNTS.forEach(function(a,i){var o=document.createElement("option");o.value=i;o.textContent=a.label;bp.appendChild(o);});}
   addItem();
   renderQI();
   renderDelivery();
