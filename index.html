@@ -1590,8 +1590,10 @@ function renderQI(){
         '</div>'+
       '</div>'+
     '</div>'+
-    bankHTML+
-    termsHTML+
+    '<div style="display:flex;gap:24px;margin-top:4px">'+
+      '<div style="flex:1">'+bankHTML+'</div>'+
+      '<div style="flex:1">'+termsHTML+'</div>'+
+    '</div>'+
     '</div>'+
     /* Signature + Footer pinned to bottom */
     '<div>'+sigHTML+footerHTML+'</div>';
