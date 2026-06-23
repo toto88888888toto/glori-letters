@@ -682,28 +682,31 @@ function generatePdf(payload){
      Left = customer info | Right = quotation meta
   ══════════════════════════════════════════════════════ */
   var infoY=y+logoH+9;
-  var halfCW=CW/2-4;
-  /* Column x positions */
-  var lLab=ML,lCol=ML+34,lVal=ML+37;      /* left column */
-  var rLab=ML+CW/2+4,rCol=ML+CW/2+38,rVal=ML+CW/2+41; /* right column */
-  var rowH=5.5; /* row height */
+  /* Match renderQI: 80px≈28mm label, 10px≈3.5mm colon, rest value; gap 32px≈11mm */
+  var lLab=ML,lCol=ML+28,lVal=ML+31.5;       /* left column */
+  var rLab=ML+CW/2+11,rCol=rLab+28,rVal=rLab+31.5; /* right column */
+  var rowH=5.5;
 
   function drawInfoRow(labX,colX,valX,yy,label,value){
     doc.setFontSize(9);SF("normal");doc.setTextColor.apply(doc,NAVY);
     doc.text(label,labX,yy);
     doc.text(":",colX,yy);
-    SF("bold");doc.text(String(value||""),valX,yy);
+    SF("bold");
+    var maxW=CW/2-35;
+    var lines=doc.splitTextToSize(String(value||"—"),maxW);
+    doc.text(lines[0],valX,yy);
   }
 
   var leftRows=[
     ["Customer",payload.customerName||"—"],
-    ["Attention",payload.attentionTo||"—"],
-    ["Address",payload.address||"—"],
-    ["Contact",payload.contact||"—"]
-  ];
+    payload.attentionTo?["Attention",payload.attentionTo]:null,
+    payload.address?["Address",payload.address]:null,
+    payload.contact?["Contact No.",payload.contact]:null
+  ].filter(Boolean);
   var rightRows=[
     [NO_LABEL,payload.docNo||"—"],
     [DT_LABEL,payload.docDate||"—"],
+    ["Validity","30 Days"],
     ["Currency",payload.currency||"LAK"],
     ["Project",payload.project||"—"]
   ];
@@ -725,7 +728,7 @@ function generatePdf(payload){
   var tY=divY+3;
   var items=payload.items||[];
   /* Column widths: No7% Img17% Desc32% Price16% Qty10% Amt18% of CW */
-  var cNo=CW*0.07,cIm=CW*0.17,cDs=CW*0.32,cPr=CW*0.16,cQt=CW*0.10,cAm=CW*0.18;
+  var cNo=CW*0.07,cIm=CW*0.14,cDs=CW*0.30,cPr=CW*0.18,cQt=CW*0.10,cAm=CW*0.21;
 
   var tableBody=items.length?items.map(function(it,i){
     var q=Number(it.qty||0),u=Number(it.unitPrice||0);
@@ -778,39 +781,40 @@ function generatePdf(payload){
   var afterTotals=totY+16;
 
   /* Left column: Bank Details then Terms (max 50% width, no overlap with totals) */
-  var leftW=CW*0.50;  /* strict left half */
-  var leftColW=leftW/2-3; /* each sub-column within left half */
-  /* Bank Details — left quarter */
-  /* Anchor bank+terms near bottom — use fixed Y unless content pushes lower */
-  var bottomAnchorY=H-MB-95; /* ~191mm from top, above sig area */
+  /* Bank+Terms: left half | right half — matches renderQI exactly */
+  var halfW=CW/2-4;
+  var bottomAnchorY=H-MB-70;
   var bX=ML,bY=Math.max(afterTotals+4,bottomAnchorY);
+  var tX=ML+CW/2+4,tY2=bY;
+
+  /* BANK DETAILS — left half */
+  doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);
+  doc.text("BANK DETAILS",bX,bY);bY+=2;
+  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(bX,bY,bX+halfW,bY);bY+=4.5;
   if(payload.bankName||payload.accountName||payload.accountNumber){
-    doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-    doc.text("BANK DETAILS",bX,bY);bY+=2;
-    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(bX,bY,bX+30,bY);bY+=5;
-    var bRows=[];
-    if(payload.bankName)bRows.push(["Bank Name",payload.bankName]);
-    if(payload.accountName)bRows.push(["Acct Name",payload.accountName]);
-    if(payload.accountNumber)bRows.push(["Acct No",payload.accountNumber]);
-    bRows.forEach(function(br){
-      doc.setFontSize(7.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-      doc.text(br[0],bX,bY);doc.text(":",bX+16,bY);
+    var bRows2=[];
+    if(payload.bankName)bRows2.push(["Bank Name",payload.bankName]);
+    if(payload.accountName)bRows2.push(["Acct Name",payload.accountName]);
+    if(payload.accountNumber)bRows2.push(["Acct No",payload.accountNumber]);
+    bRows2.forEach(function(br){
+      doc.setFontSize(7);SF("bold");doc.setTextColor(55,65,81);
+      doc.text(br[0],bX,bY);doc.text(":",bX+17,bY);
       SF("normal");
-      var vl=doc.splitTextToSize(br[1],leftColW-18);
-      doc.text(vl,bX+18,bY);bY+=vl.length*4.5;
+      var vl=doc.splitTextToSize(br[1],halfW-19);
+      doc.text(vl,bX+19,bY);bY+=vl.length*4;
     });
   }
-  /* Terms & Conditions — right quarter of left half */
-  var tX=ML+leftW/2+2,tY2=Math.max(afterTotals+4,bottomAnchorY);
-  doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
+
+  /* TERMS & CONDITIONS — right half */
+  doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);
   doc.text("TERMS & CONDITIONS",tX,tY2);tY2+=2;
-  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(tX,tY2,tX+40,tY2);tY2+=5;
+  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(tX,tY2,tX+halfW,tY2);tY2+=4.5;
   var terms=["1. Quotation valid for 30 days from the date of issue.",
     "2. Production begins after written confirmation and advance payment received.",
     "3. Delivery timeline depends on final approved artwork and production schedule.",
     "4. Prices are quoted in "+(payload.currency||"LAK")+" unless otherwise specified."];
-  doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,NAVY);
-  terms.forEach(function(t){var tl=doc.splitTextToSize(t,leftColW);doc.text(tl,tX,tY2);tY2+=tl.length*4.5;});
+  doc.setFontSize(7);SF("normal");doc.setTextColor(55,65,81);
+  terms.forEach(function(t){var tl=doc.splitTextToSize(t,halfW);doc.text(tl,tX,tY2);tY2+=tl.length*4;});
 
   /* ══════════════════════════════════════════════════════
      SIGNATURE SECTION  — anchored above footer
@@ -842,7 +846,7 @@ function generatePdf(payload){
   ══════════════════════════════════════════════════════ */
   doc.setFillColor.apply(doc,NAVY);doc.rect(0,H-MB-2,W,MB+2,"F");
   doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,WHITE);
-  doc.text("GLORI CREATIVITY SOLE CO., LTD.  ·  +856 20 9 557755 6  ·  customer_sv@glori-cre.org  ·  glori-cre.org",W/2,H-4,{align:"center"});
+  doc.text("GLORI CREATIVITY SOLE CO., LTD.  ·  +856 20 95 577 556  ·  customer_sv@glori-cre.org  ·  glori-cre.org",W/2,H-4,{align:"center"});
 
   var _pdfName=(payload.docType||"Doc")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf";
   return{base64:doc.output("datauristring").split(",")[1],name:_pdfName};
@@ -891,31 +895,13 @@ async function saveLocal(){
     }
     else{dbAdd(payload);}
     renderSavedList();
-    // 3. Capture preview as PDF using html2pdf
-    var _pdfName=(payload.docType||"Quotation")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf";
-    var _el=document.getElementById("qi-preview");
-    // Fix element to exact A4 size for capture
-    var _prevMinH=_el.style.minHeight,_prevH=_el.style.height,_prevOv=_el.style.overflow;
-    _el.style.minHeight="842px";_el.style.height="842px";_el.style.overflow="hidden";
-    var _opt={
-      margin:0,
-      filename:_pdfName,
-      image:{type:"jpeg",quality:0.99},
-      html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,width:595,height:842,windowWidth:595},
-      jsPDF:{unit:"px",format:[595,842],orientation:"portrait",hotfixes:["px_scaling"]}
-    };
-    // Single pass: get blob, download, get base64 for Drive
-    var _pdfBlob=await html2pdf().set(_opt).from(_el).outputPdf("blob");
-    // Restore element
-    _el.style.minHeight=_prevMinH;_el.style.height=_prevH;_el.style.overflow=_prevOv;
-    // Download
-    var _url=URL.createObjectURL(_pdfBlob);
-    var _a=document.createElement("a");_a.href=_url;_a.download=_pdfName;document.body.appendChild(_a);_a.click();document.body.removeChild(_a);setTimeout(function(){URL.revokeObjectURL(_url);},1000);
-    // Base64 for Drive
-    var _pdfBase64=await new Promise(function(res){var r=new FileReader();r.onloadend=function(){res(r.result.split(",")[1]);};r.readAsDataURL(_pdfBlob);});
+    // 3. Generate PDF with jsPDF and download
+    var pdfResult=generatePdf(payload);
+    downloadPdfBase64(pdfResult.base64,pdfResult.name);
+    // 4. Upload to Drive
     if(accessToken){
       try{
-        await uploadPdfToDriveFolder(driveDocType,_pdfName,_pdfBase64);
+        await uploadPdfToDriveFolder(driveDocType,pdfResult.name,pdfResult.base64);
         showToast("✅ Saved to Google Drive");
       }catch(ue){
         console.warn("Drive upload skipped:",ue);
