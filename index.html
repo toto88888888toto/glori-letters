@@ -38,7 +38,7 @@
     .btn-secondary-l{background:#1a1a2e;color:#fff}
     .btn-outline-l{background:#f0f0f0;color:#333}
     .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
-    .letter{background:#fff;max-width:760px;margin:0 auto;padding:28px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column}
+    .letter{background:#fff;width:595px;min-height:842px;margin:0 auto;padding:0;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;color:#112D4E;position:relative;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .letter-logo{text-align:center;margin-bottom:32px}
     .logo-text{font-family:'Poppins',sans-serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
     .letter-body p{margin-bottom:14px}
@@ -111,11 +111,12 @@
       .qi-page{height:auto}
     }
     @media print{
-      body{background:#fff}
-      header,.tabs,.form-panel,.qi-page{display:none!important}
-      .letter-page{display:block!important;height:auto}
-      .preview-panel{padding:0;background:#fff;overflow:visible}
-      .letter{box-shadow:none;padding:.5in .75in;max-width:100%;margin:0}
+      body{background:#fff;margin:0;padding:0}
+      header,.tabs,.form-panel,.qi-page,.no-print{display:none!important}
+      .letter-page{display:block!important;height:auto;margin:0}
+      .preview-panel{padding:0;background:#fff;overflow:visible;display:block}
+      .letter{box-shadow:none;width:210mm;min-height:297mm;margin:0}
+      @page{size:A4 portrait;margin:0}
     }
   
     /* ── Right Saved Sidebar ── */
@@ -889,20 +890,20 @@ async function saveLocal(){
     }
     else{dbAdd(payload);}
     renderSavedList();
-    // 3. Generate & download PDF
-    var pdfResult=generatePdf(payload);
-    downloadPdfBase64(pdfResult.base64,pdfResult.name);
-    // 4. Upload to Drive (token already obtained above)
+    // 3. Print preview as PDF (preview IS the PDF — always matches)
+    window.print();
+    // 4. Upload to Drive using jsPDF (background only)
     if(accessToken){
       try{
+        var pdfResult=generatePdf(payload);
         await uploadPdfToDriveFolder(driveDocType,pdfResult.name,pdfResult.base64);
         showToast("✅ Saved to Google Drive");
       }catch(ue){
         console.warn("Drive upload skipped:",ue);
-        showToast("💾 PDF downloaded (Drive sync skipped)");
+        showToast("💾 Printed (Drive sync skipped)");
       }
     }else{
-      showToast("💾 PDF downloaded");
+      showToast("💾 Printed — save as PDF in print dialog");
     }
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
@@ -1334,13 +1335,21 @@ async function exportAllJson(){
 }
 
 /* === QI LIVE PREVIEW === */
+function _infoRow(lbl,val){
+  return '<div style="display:grid;grid-template-columns:80px 10px 1fr;align-items:center;min-height:18px">'+
+    '<span style="font-size:9px;font-weight:400;color:#112D4E;white-space:nowrap">'+lbl+'</span>'+
+    '<span style="font-size:9px;color:#112D4E">:</span>'+
+    '<span style="font-size:9px;font-weight:700;color:#112D4E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+val+'</span>'+
+  '</div>';
+}
+
 function renderQI(){
   var previewEl=document.getElementById('qi-preview');
   if(!previewEl)return;
   var docType=g('docType')||'Quotation';
   var docNo=g('docNo')||'—';
   var docDate=g('docDate')||'—';
-  var project=g('project')||'';
+  var project=g('project')||'—';
   var currency=g('currency')||'LAK';
   var customerName=g('customerName')||'—';
   var attentionTo=g('attentionTo')||'';
@@ -1354,176 +1363,161 @@ function renderQI(){
     items.push({detail:card.querySelector('.item-detail').value||'',qty:Number(card.querySelector('.item-qty').value||0),price:Number(card.querySelector('.item-price').value||0),photo:card.dataset.photo||''});
   });
   var subtotal=0;items.forEach(function(it){subtotal+=it.qty*it.price;});
-  var discount=Number(g('discount')||0);var net=Math.max(0,subtotal-discount);var vat=vatEnabled?net*0.1:0;var total=net+vat;
-  var advPct=Math.max(0,Math.min(100,Number(g('advancePercent')||0)));var advance=total*(advPct/100);var balance=Math.max(0,total-advance);
+  var discount=Number(g('discount')||0);
+  var net=Math.max(0,subtotal-discount);
+  var vat=vatEnabled?net*0.1:0;
+  var total=net+vat;
+  var advPct=Math.max(0,Math.min(100,Number(g('advancePercent')||0)));
+  var advance=total*(advPct/100);
+  var balance=Math.max(0,total-advance);
   var isLak=currency==='LAK';
   var nf=new Intl.NumberFormat('en-US',{minimumFractionDigits:isLak?0:2,maximumFractionDigits:isLak?0:2});
   function mn(n){return nf.format(Number(n)||0);}
   var isInv=docType.toLowerCase()==='invoice';
   var TITLE=docType.toUpperCase();
-  var NO_LABEL=isInv?'Invoice No.':'Quotation No.';
-  var DT_LABEL=isInv?'Invoice Date':'Quotation Date';
-  var NAVY='#0F2A4A';
-  var LGRAY='#E5E7EB';
-
-  /* -- Logo + company name -- */
+  var NO_LBL=isInv?'Invoice No.':'Quotation No.';
+  var DT_LBL=isInv?'Invoice Date':'Quotation Date';
+  var NAVY='#112D4E';
   var logoSrc=LOGO_DATAURL||'LOGO/Head logo.png';
-  var headerLogoHTML='<div style="display:flex;flex-direction:column;gap:4px">'+
-    '<img src="'+logoSrc+'" style="max-height:52px;max-width:110px;object-fit:contain"/>'+
-    '<div style="font-size:9px;font-weight:700;color:'+NAVY+';letter-spacing:.04em;text-transform:uppercase">GLORI CREATIVITY SOLE CO., LTD.</div>'+
-  '</div>';
 
-  /* -- Meta rows right -- */
-  var metaRows=[
-    [NO_LABEL,docNo],
-    [DT_LABEL,docDate],
-    ['Validity','30 Days'],
-    ['Currency',currency],
-    ['Project',project||'—']
-  ];
-  var metaHTML=metaRows.map(function(r){
-    return '<tr>'+
-      '<td style="padding:2px 6px 2px 0;color:#888;font-size:11px;white-space:nowrap">'+r[0]+'</td>'+
-      '<td style="padding:2px 4px;color:#888;font-size:11px">:</td>'+
-      '<td style="padding:2px 0;font-size:11px;color:#333;font-weight:600;text-align:right;white-space:nowrap">'+r[1]+'</td>'+
-    '</tr>';
-  }).join('');
-
-  /* -- Client field rows left -- */
-  var clientRows=[
-    ['Customer',customerName],
-    attentionTo?['Attention',attentionTo]:null,
-    address?['Address',address]:null,
-    contact?['Contact',contact]:null
-  ].filter(Boolean);
-  var clientHTML=clientRows.map(function(r){
-    return '<tr>'+
-      '<td style="padding:2px 4px 2px 0;color:#888;font-size:11px;white-space:nowrap;vertical-align:top">'+r[0]+'</td>'+
-      '<td style="padding:2px 4px;color:#888;font-size:11px;vertical-align:top">:</td>'+
-      '<td style="padding:2px 0;font-size:11px;color:#333;vertical-align:top">'+r[1]+'</td>'+
-    '</tr>';
-  }).join('');
-
-  /* -- Table rows -- */
+  /* ── Table rows ── */
   var itemsHTML=items.map(function(it,i){
-    var photoCell=it.photo
-      ?'<td style="padding:4px;border:1px solid '+LGRAY+';text-align:center;width:17%"><img src="'+it.photo+'" style="width:52px;height:52px;object-fit:contain"/></td>'
-      :'<td style="padding:4px;border:1px solid '+LGRAY+';text-align:center;width:17%;color:#ccc;font-size:11px">—</td>';
-    return '<tr>'+
-      '<td style="padding:6px 4px;text-align:center;border:1px solid '+LGRAY+';font-size:11px;width:7%">'+String(i+1).padStart(2,'0')+'</td>'+
-      photoCell+
-      '<td style="padding:6px 8px;border:1px solid '+LGRAY+';font-size:11px;width:32%;text-align:left">'+it.detail+'</td>'+
-      '<td style="padding:6px 6px;border:1px solid '+LGRAY+';text-align:right;font-size:11px;width:16%">'+mn(it.price)+'</td>'+
-      '<td style="padding:6px 4px;border:1px solid '+LGRAY+';text-align:center;font-size:11px;width:10%">'+it.qty+'</td>'+
-      '<td style="padding:6px 6px;border:1px solid '+LGRAY+';text-align:right;font-size:11px;width:18%">'+mn(it.qty*it.price)+'</td>'+
+    var imgCell=it.photo
+      ?'<img src="'+it.photo+'" style="max-width:100%;max-height:22px;object-fit:contain;display:block;margin:0 auto">'
+      :'<span style="font-size:7px;color:#9CA3AF;font-style:italic">—</span>';
+    return '<tr style="height:26px;border-bottom:1px solid rgba(17,45,78,0.15)">'+
+      '<td style="text-align:center;padding:0 5px;font-size:9px;color:'+NAVY+';border-right:1px solid rgba(17,45,78,0.12)">'+String(i+1).padStart(2,'0')+'</td>'+
+      '<td style="text-align:center;padding:2px 4px;border-right:1px solid rgba(17,45,78,0.12)">'+imgCell+'</td>'+
+      '<td style="text-align:left;padding:0 6px;font-size:9px;color:'+NAVY+';border-right:1px solid rgba(17,45,78,0.12);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+it.detail+'</td>'+
+      '<td style="text-align:right;padding:0 6px;font-size:9px;color:'+NAVY+';white-space:nowrap;border-right:1px solid rgba(17,45,78,0.12)">'+mn(it.price)+'</td>'+
+      '<td style="text-align:center;padding:0 5px;font-size:9px;color:'+NAVY+';border-right:1px solid rgba(17,45,78,0.12)">'+it.qty+'</td>'+
+      '<td style="text-align:right;padding:0 6px;font-size:9px;color:'+NAVY+';white-space:nowrap">'+mn(it.qty*it.price)+'</td>'+
     '</tr>';
   }).join('');
 
-  /* -- Totals rows -- */
-  var totHTML='<tr><td style="padding:5px 12px 5px 0;color:#888;font-size:11px">Sub Total</td><td style="padding:5px 0;text-align:right;font-size:11px;color:#333">'+mn(subtotal)+'</td></tr>';
-  if(discount>0)totHTML+='<tr><td style="padding:3px 12px 3px 0;color:#888;font-size:11px">Discount</td><td style="padding:3px 0;text-align:right;font-size:11px;color:#333">'+mn(discount)+'</td></tr>';
-  totHTML+='<tr><td style="padding:3px 12px 3px 0;color:#888;font-size:11px">Tax ('+(vatEnabled?'10':'0')+'%)</td><td style="padding:3px 0;text-align:right;font-size:11px;color:#333">'+mn(vat)+'</td></tr>';
-  if(advPct>0)totHTML+='<tr><td style="padding:3px 12px 3px 0;color:#888;font-size:11px;white-space:nowrap">Advance Payment ('+advPct+'%)</td><td style="padding:3px 0;text-align:right;font-size:11px;color:#333">'+mn(advance)+'</td></tr>';
+  /* ── Totals rows ── */
+  var totHTML='<tr style="height:20px;border-top:1px solid rgba(17,45,78,0.12);border-bottom:1px solid rgba(17,45,78,0.12)">'+
+    '<td style="font-size:9px;font-weight:400;color:#374151;padding:0 2px 0 8px">Sub Total</td>'+
+    '<td style="font-size:9px;font-weight:500;color:'+NAVY+';text-align:right;white-space:nowrap;padding-right:2px">'+mn(subtotal)+'</td></tr>';
+  if(discount>0)totHTML+='<tr style="height:20px;border-bottom:1px solid rgba(17,45,78,0.12)"><td style="font-size:9px;color:#374151;padding:0 2px 0 8px">Discount</td><td style="font-size:9px;font-weight:500;color:'+NAVY+';text-align:right;padding-right:2px">'+mn(discount)+'</td></tr>';
+  totHTML+='<tr style="height:20px;border-bottom:1px solid rgba(17,45,78,0.12)"><td style="font-size:9px;color:#374151;padding:0 2px 0 8px">Tax ('+(vatEnabled?'10':'0')+'%)</td><td style="font-size:9px;font-weight:500;color:'+NAVY+';text-align:right;padding-right:2px">'+mn(vat)+'</td></tr>';
+  if(advPct>0)totHTML+='<tr style="height:20px;border-bottom:1px solid rgba(17,45,78,0.12)"><td style="font-size:9px;color:#374151;padding:0 2px 0 8px;white-space:nowrap">Advance ('+advPct+'%)</td><td style="font-size:9px;font-weight:500;color:'+NAVY+';text-align:right;padding-right:2px">'+mn(advance)+'</td></tr>';
 
-  /* -- Bank details -- */
-  /* -- Bank details — always show section, fill rows if selected -- */
+  /* ── Bank rows ── */
   var bRows=[];
   if(bankName)bRows.push(['Bank Name',bankName]);
   if(accountName)bRows.push(['Acct Name',accountName]);
   if(accountNumber)bRows.push(['Acct No',accountNumber]);
-  var SEC_HD='font-size:8px;font-weight:700;color:'+NAVY+';text-transform:uppercase;letter-spacing:.08em;display:inline-block;border-bottom:1.5px solid '+NAVY+';padding-bottom:2px;margin-bottom:5px';
-  var bankHTML='<div>'+
-    '<div style="'+SEC_HD+'">BANK DETAILS</div>'+
-    (bRows.length?'<table style="margin-top:2px;border-collapse:collapse">'+
-      bRows.map(function(r){return '<tr>'+
-        '<td style="padding:1px 6px 1px 0;font-size:7.5px;font-weight:600;color:#374151;white-space:nowrap">'+r[0]+'</td>'+
-        '<td style="padding:1px 4px;font-size:7.5px;color:#374151">:</td>'+
-        '<td style="padding:1px 0;font-size:7.5px;color:#374151;max-width:160px">'+r[1]+'</td>'+
-      '</tr>';}).join('')+
-    '</table>':'<div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-style:italic">No bank selected</div>')+
-  '</div>';
+  var bankRowsHTML=bRows.length
+    ?bRows.map(function(r){return '<tr>'+
+        '<td style="font-size:7px;font-weight:600;color:#374151;padding:1px 4px 1px 0;white-space:nowrap">'+r[0]+'</td>'+
+        '<td style="font-size:7px;color:#374151;padding:1px 3px">:</td>'+
+        '<td style="font-size:7px;color:#374151;padding:1px 0">'+r[1]+'</td>'+
+      '</tr>';}).join('')
+    :'<tr><td colspan="3" style="font-size:7px;color:#9CA3AF;font-style:italic;padding:2px 0">No bank selected</td></tr>';
 
-  /* -- Terms -- */
-  var termsHTML='<div>'+
-    '<div style="'+SEC_HD+'">TERMS &amp; CONDITIONS</div>'+
-    '<div style="margin-top:2px;font-size:7.5px;color:#374151;line-height:1.6">'+
-      '<div>1. Quotation valid for 30 days from the date of issue.</div>'+
-      '<div>2. Production begins after written confirmation and advance payment received.</div>'+
-      '<div>3. Delivery timeline depends on final approved artwork and production schedule.</div>'+
-      '<div>4. Prices are quoted in '+currency+' unless otherwise specified.</div>'+
-    '</div>'+
-  '</div>';
-
-  /* -- Signature section (Figma spec: 183px each, 80px gap, 64px signing space) -- */
-  var sigHTML='<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0">'+
-    '<div style="display:flex;justify-content:center;gap:80px;margin-bottom:0">'+
-      '<div style="width:183px;display:flex;flex-direction:column;align-items:center;gap:64px">'+
-        '<div style="font-size:14px;font-weight:400;color:#374151;text-align:center">Prepared By</div>'+
-        '<div style="width:100%;border-top:1px solid #D1D5DB;padding-top:8px;text-align:center;font-size:12px;color:#6B7280">Name, Signature &amp; Stamp</div>'+
-      '</div>'+
-      '<div style="width:183px;display:flex;flex-direction:column;align-items:center;gap:64px">'+
-        '<div style="font-size:14px;font-weight:400;color:#374151;text-align:center">Client Acceptance</div>'+
-        '<div style="width:100%;border-top:1px solid #D1D5DB;padding-top:8px;text-align:center;font-size:12px;color:#6B7280">Name, Signature &amp; Stamp</div>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
-
-  /* -- Footer (Figma: space-between, padding 16px 40px, 10px white Poppins) -- */
-  var footerHTML='<div style="margin-top:20px;width:calc(100% + 128px);margin-left:-64px;margin-bottom:-28px;background:'+NAVY+';padding:10px 40px;display:flex;justify-content:center;align-items:center;font-size:8px;color:#fff;font-family:Poppins,sans-serif;letter-spacing:.2px">'+
-    '<span>GLORI CREATIVITY SOLE CO., LTD. &nbsp;&middot;&nbsp; +856 20 95 577 556 &nbsp;&middot;&nbsp; customer_sv@glori-cre.org &nbsp;&middot;&nbsp; glori-cre.org</span>'+
-  '</div>';
+  var SHD='font-size:8px;font-weight:700;color:'+NAVY+';text-transform:uppercase;letter-spacing:.5px;display:inline-block;border-bottom:1.5px solid '+NAVY+';padding-bottom:2px;margin-bottom:5px';
 
   applyPreviewBg('qi-preview');
-  previewEl.style.display='flex';
-  previewEl.style.flexDirection='column';
   previewEl.innerHTML=
-    '<div style="flex:1">'+
-    /* Header */
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
-      headerLogoHTML+
-      '<div style="font-size:30px;font-weight:800;color:'+NAVY+';letter-spacing:.01em;line-height:1">'+TITLE+'</div>'+
+    /* ── PAGE BODY ── */
+    '<div style="position:absolute;top:0;left:0;right:0;bottom:28px;padding:32px 50px 10px;display:flex;flex-direction:column;font-family:Poppins,sans-serif">'+
+
+    /* HEADER */
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-shrink:0">'+
+      '<div>'+
+        '<img src="'+logoSrc+'" style="width:100.77px;height:42px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
+        '<div style="font-size:7px;font-weight:400;color:'+NAVY+';text-transform:uppercase;letter-spacing:.3px;margin-top:3px;line-height:16px">GLORI CREATIVITY SOLE CO., LTD.</div>'+
+      '</div>'+
+      '<div style="font-size:30px;font-weight:700;color:'+NAVY+';letter-spacing:1.8px;line-height:40px">'+TITLE+'</div>'+
     '</div>'+
-    /* Client + Meta two-column */
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
-      '<table style="border-collapse:collapse">'+clientHTML+'</table>'+
-      '<table style="border-collapse:collapse;text-align:right">'+metaHTML+'</table>'+
+
+    /* INFO GRID */
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;margin-bottom:10px;flex-shrink:0">'+
+      '<div>'+
+        _infoRow('Customer',customerName)+
+        (attentionTo?_infoRow('Attention',attentionTo):'')+
+        (address?_infoRow('Address',address):'')+
+        (contact?_infoRow('Contact No.',contact):'')+
+      '</div>'+
+      '<div>'+
+        _infoRow(NO_LBL,docNo)+
+        _infoRow(DT_LBL,docDate)+
+        _infoRow('Validity','30 Days')+
+        _infoRow('Currency',currency)+
+        _infoRow('Project',project||'—')+
+      '</div>'+
     '</div>'+
-    /* Divider */
-    '<div style="border-top:1.5px solid '+NAVY+';margin-bottom:10px"></div>'+
-    /* Table */
-    '<table style="width:100%;border-collapse:collapse;margin-bottom:14px;table-layout:fixed">'+
-      '<thead><tr style="background:'+NAVY+';color:#fff">'+
-        '<th style="padding:8px 4px;text-align:center;font-size:12px;width:7%">No.</th>'+
-        '<th style="padding:8px 4px;text-align:center;font-size:12px;width:17%">Image</th>'+
-        '<th style="padding:8px 8px;text-align:center;font-size:12px;width:32%">Description</th>'+
-        '<th style="padding:8px 6px;text-align:center;font-size:12px;width:16%">Unit Price</th>'+
-        '<th style="padding:8px 4px;text-align:center;font-size:12px;width:10%">Qty</th>'+
-        '<th style="padding:8px 6px;text-align:center;font-size:12px;width:18%">Amount</th>'+
+
+    /* DIVIDER */
+    '<div style="width:100%;height:1px;background:'+NAVY+';flex-shrink:0;margin-bottom:8px"></div>'+
+
+    /* TABLE */
+    '<table style="width:100%;border-collapse:collapse;table-layout:fixed;flex-shrink:0">'+
+      '<colgroup><col style="width:7%"><col style="width:14%"><col style="width:30%"><col style="width:18%"><col style="width:10%"><col style="width:21%"></colgroup>'+
+      '<thead><tr style="background:'+NAVY+';height:25px">'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;border-right:1px solid rgba(255,255,255,0.18);font-family:Poppins,sans-serif">No.</th>'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;border-right:1px solid rgba(255,255,255,0.18);font-family:Poppins,sans-serif">Image</th>'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;border-right:1px solid rgba(255,255,255,0.18);font-family:Poppins,sans-serif">Description</th>'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;border-right:1px solid rgba(255,255,255,0.18);font-family:Poppins,sans-serif">Unit Price</th>'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;border-right:1px solid rgba(255,255,255,0.18);font-family:Poppins,sans-serif">Qty</th>'+
+        '<th style="color:#fff;font-size:9px;font-weight:600;text-align:center;padding:0 5px;font-family:Poppins,sans-serif">Amount</th>'+
       '</tr></thead>'+
       '<tbody>'+itemsHTML+'</tbody>'+
     '</table>'+
-    /* Totals right */
-    '<div style="display:flex;justify-content:flex-end;margin-bottom:4px">'+
-      '<div style="width:48%">'+
-        '<table style="width:100%;border-collapse:collapse;margin-bottom:6px">'+totHTML+'</table>'+
-        '<div style="background:'+NAVY+';color:#fff;display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:2px">'+
-          '<span style="font-size:14px;font-weight:700">BALANCE DUE</span>'+
-          '<span style="font-size:18px;font-weight:700">'+mn(balance)+'</span>'+
+
+    /* TOTALS */
+    '<div style="display:flex;justify-content:flex-end;margin-top:4px;flex-shrink:0">'+
+      '<div style="width:46%">'+
+        '<table style="width:100%;border-collapse:collapse">'+totHTML+'</table>'+
+      '</div>'+
+    '</div>'+
+
+    /* BALANCE DUE */
+    '<div style="display:flex;justify-content:space-between;align-items:center;background:'+NAVY+';height:30px;padding:0 12px;margin-top:2px;flex-shrink:0">'+
+      '<span style="font-size:9.5px;font-weight:600;color:#fff;letter-spacing:.6px">BALANCE DUE</span>'+
+      '<span style="font-size:14px;font-weight:700;color:#fff">'+mn(balance)+'</span>'+
+    '</div>'+
+
+    /* BANK + TERMS — margin-top:auto pushes to bottom */
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px;margin-top:auto;padding-top:12px;flex-shrink:0">'+
+      '<div>'+
+        '<span style="'+SHD+'">BANK DETAILS</span>'+
+        '<table style="border-collapse:collapse;margin-top:2px">'+bankRowsHTML+'</table>'+
+      '</div>'+
+      '<div>'+
+        '<span style="'+SHD+'">TERMS &amp; CONDITIONS</span>'+
+        '<div style="margin-top:2px;font-size:7px;color:#374151;line-height:1.6">'+
+          '<div>1. Quotation valid for 30 days from the date of issue.</div>'+
+          '<div>2. Production begins after written confirmation and advance payment received.</div>'+
+          '<div>3. Delivery timeline depends on final approved artwork and production schedule.</div>'+
+          '<div>4. Prices are quoted in '+currency+' unless otherwise specified.</div>'+
         '</div>'+
       '</div>'+
     '</div>'+
-    '</div>'+
-    /* Bank+Terms+Sig+Footer all pinned to bottom */
-    '<div>'+
-      '<div style="display:flex;gap:24px;margin-bottom:14px;margin-top:16px">'+
-        '<div style="flex:1">'+bankHTML+'</div>'+
-        '<div style="flex:1">'+termsHTML+'</div>'+
+
+    /* SIGNATURES */
+    '<div style="display:grid;grid-template-columns:1fr 1fr;margin-top:12px;flex-shrink:0">'+
+      '<div style="display:flex;flex-direction:column;align-items:center">'+
+        '<div style="font-size:12px;font-weight:400;color:#374151;text-align:center;margin-bottom:36px">Prepared By</div>'+
+        '<div style="width:155px;height:1px;background:rgba(17,45,78,0.2);margin-bottom:5px"></div>'+
+        '<div style="font-size:10px;color:#6B7280;text-align:center">Name, Signature &amp; Stamp</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:center">'+
+        '<div style="font-size:12px;font-weight:400;color:#374151;text-align:center;margin-bottom:36px">Client Acceptance</div>'+
+        '<div style="width:155px;height:1px;background:rgba(17,45,78,0.2);margin-bottom:5px"></div>'+
+        '<div style="font-size:10px;color:#6B7280;text-align:center">Name, Signature &amp; Stamp</div>'+
       '</div>'+
     '</div>'+
-    sigHTML+footerHTML;
+
+    '</div>'+ /* end page-body */
+
+    /* FOOTER */
+    '<div style="position:absolute;bottom:0;left:0;width:100%;height:28px;background:'+NAVY+';display:flex;align-items:center;justify-content:center">'+
+      '<span style="font-size:8px;color:#fff;white-space:nowrap;letter-spacing:.2px;font-family:Poppins,sans-serif">GLORI CREATIVITY SOLE CO., LTD. &nbsp;&middot;&nbsp; +856 20 95 577 556 &nbsp;&middot;&nbsp; customer_sv@glori-cre.org &nbsp;&middot;&nbsp; glori-cre.org</span>'+
+    '</div>';
 }
 
-/* === LETTER SECTION === */
 function applyPreviewBg(elId){
   var container=document.getElementById(elId);
   if(!container)return;
