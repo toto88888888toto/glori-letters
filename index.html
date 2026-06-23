@@ -815,9 +815,6 @@ function generatePdf(payload){
   ══════════════════════════════════════════════════════ */
   var sigY=H-MB-42;
   /* "Signature Section" label spaced */
-  doc.setFontSize(6);SF("normal");doc.setTextColor(180,180,180);
-  var sigLabel="S i g n a t u r e   S e c t i o n";
-  doc.text(sigLabel,W/2,sigY,{align:"center"});sigY+=6;
   /* Two sig boxes centered with 28mm gap (80px≈28.2mm) */
   var sigLineW=62,sigGap=28;
   var totalSigW=sigLineW*2+sigGap;
@@ -835,9 +832,7 @@ function generatePdf(payload){
   sigY+=5;
   /* Sub-labels */
   doc.setFontSize(7.5);SF("normal");doc.setTextColor(150,150,150);
-  doc.text("name",sig1X,sigY);
   doc.text("Name & Signature",sig1X+sigLineW/2,sigY,{align:"center"});
-  doc.text("name",sig2X,sigY);
   doc.text("Name, Signature & Stamp",sig2X+sigLineW/2,sigY,{align:"center"});
 
   /* ══════════════════════════════════════════════════════
