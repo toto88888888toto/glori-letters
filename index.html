@@ -38,7 +38,7 @@
     .btn-secondary-l{background:#1a1a2e;color:#fff}
     .btn-outline-l{background:#f0f0f0;color:#333}
     .preview-panel{overflow-y:auto;padding:36px;background:#e8eaed}
-    .letter{background:#fff;max-width:760px;margin:0 auto;padding:28px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden;isolation:isolate}
+    .letter{background:#fff;max-width:760px;margin:0 auto;padding:28px 64px;box-shadow:0 2px 20px rgba(0,0,0,.12);font-family:'Poppins','Noto Sans Lao',sans-serif;font-size:12px;line-height:1.65;color:#111;min-height:1050px;position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column}
     .letter-logo{text-align:center;margin-bottom:32px}
     .logo-text{font-family:'Poppins',sans-serif;font-size:2.4rem;font-style:italic;letter-spacing:.04em;border:2px solid #111;display:inline-block;padding:6px 22px 4px}
     .letter-body p{margin-bottom:14px}
@@ -1457,21 +1457,26 @@ function renderQI(){
     '</div>'+
   '</div>';
 
-  /* -- Signature section -- */
-  var sigHTML='<div style="display:flex;justify-content:space-between;margin-top:28px;padding-top:8px">'+
-    '<div style="text-align:center;width:38%">'+
-      '<div style="font-size:11px;font-weight:700;color:#333;margin-bottom:24px">Prepared By</div>'+
-      '<div style="border-top:1px solid '+LGRAY+';padding-top:6px;font-size:10px;color:#888">Name &amp; Signature</div>'+
-    '</div>'+
-    '<div style="text-align:center;width:38%">'+
-      '<div style="font-size:11px;font-weight:700;color:#333;margin-bottom:24px">Client Acceptance</div>'+
-      '<div style="border-top:1px solid '+LGRAY+';padding-top:6px;font-size:10px;color:#888">Name, Signature &amp; Stamp</div>'+
+  /* -- Signature section (Figma spec: 183px each, 80px gap, 64px signing space) -- */
+  var sigHTML='<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:0">'+
+    '<div style="display:flex;justify-content:center;gap:80px;margin-bottom:0">'+
+      '<div style="width:183px;display:flex;flex-direction:column;align-items:center;gap:64px">'+
+        '<div style="font-size:14px;font-weight:400;color:#374151;text-align:center">Prepared By</div>'+
+        '<div style="width:100%;border-top:1px solid #D1D5DB;padding-top:8px;text-align:center;font-size:12px;color:#6B7280">Name &amp; Signature</div>'+
+      '</div>'+
+      '<div style="width:183px;display:flex;flex-direction:column;align-items:center;gap:64px">'+
+        '<div style="font-size:14px;font-weight:400;color:#374151;text-align:center">Client Acceptance</div>'+
+        '<div style="width:100%;border-top:1px solid #D1D5DB;padding-top:8px;text-align:center;font-size:12px;color:#6B7280">Name, Signature &amp; Stamp</div>'+
+      '</div>'+
     '</div>'+
   '</div>';
 
-  /* -- Footer -- */
-  var footerHTML='<div style="margin-top:20px;width:calc(100% + 36px);margin-left:-18px;margin-bottom:-18px;background:'+NAVY+';padding:9px 18px;text-align:center;font-size:10px;color:#fff">'+
-    'GLORI CREATIVITY SOLE CO., LTD.  ·  +856 20 95 577 556  ·  customer_sv@glori-cre.org  ·  glori-cre.org'+
+  /* -- Footer (Figma: space-between, padding 16px 40px, 10px white Poppins) -- */
+  var footerHTML='<div style="margin-top:20px;width:calc(100% + 128px);margin-left:-64px;margin-bottom:-28px;background:'+NAVY+';padding:10px 40px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#fff;font-family:Poppins,sans-serif">'+
+    '<span>GLORI CREATIVITY SOLE CO., LTD.</span>'+
+    '<span>+856 20 9 557755 6</span>'+
+    '<span>customer_sv@glori-cre.org</span>'+
+    '<span>glori-cre.org</span>'+
   '</div>';
 
   applyPreviewBg('qi-preview');
@@ -1519,7 +1524,7 @@ function renderQI(){
     '</div>'+
     '</div>'+
     /* Signature + Footer pinned to bottom */
-    '<div>'+sigHTML+footerHTML+'</div>';
+    sigHTML+footerHTML;
 }
 
 /* === LETTER SECTION === */
