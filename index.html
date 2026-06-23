@@ -138,9 +138,15 @@
     /* push main content left so sidebar doesn't overlap */
     .letter-page{margin-right:270px}
 
+  
+  /* === Toast notification === */
+  #gr-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#0F2747;color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,0.25);}
+  #gr-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
   </style>
 </head>
 <body>
+<div id="gr-toast"></div>
 
 <header>
   <div>
@@ -752,6 +758,15 @@ function generatePdf(payload){
 
 function setGenerating(isOn){var btn=$id("saveBtn");if(!btn)return;if(isOn){btn.dataset.oldText=btn.innerText;btn.innerText="Generating...";btn.disabled=true;btn.style.opacity="0.75";}else{btn.innerText=btn.dataset.oldText||"\ud83d\udcbe Save";btn.disabled=false;btn.style.opacity="";}}
 
+
+function showToast(msg,duration){
+  var t=document.getElementById("gr-toast");
+  if(!t)return;
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.classList.remove("show");},duration||3000);
+}
+
 async function saveLocal(){
   var payload=buildPayload();
   if(!payload.docNo)return alert("Please enter Doc No");
@@ -772,7 +787,7 @@ async function saveLocal(){
             if(resp&&resp.access_token){accessToken=resp.access_token;}
             resolve();
           };
-          tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
+          tokenClient.requestAccessToken({prompt:"none",login_hint:"outamavongsa.toto@gmail.com"});
         });
       }catch(te){console.warn("Drive silent token failed:",te);}
     }
@@ -789,8 +804,15 @@ async function saveLocal(){
     downloadPdfBase64(pdfResult.base64,pdfResult.name);
     // 4. Upload to Drive (token already obtained above)
     if(accessToken){
-      try{await uploadPdfToDriveFolder(driveDocType,pdfResult.name,pdfResult.base64);}
-      catch(ue){console.warn("Drive upload skipped:",ue);}
+      try{
+        await uploadPdfToDriveFolder(driveDocType,pdfResult.name,pdfResult.base64);
+        showToast("✅ Saved to Google Drive");
+      }catch(ue){
+        console.warn("Drive upload skipped:",ue);
+        showToast("💾 PDF downloaded (Drive sync skipped)");
+      }
+    }else{
+      showToast("💾 PDF downloaded");
     }
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
@@ -870,14 +892,14 @@ function initGoogleAuth(){
 
 function connectDrive(){
   if(!tokenClient){alert("Google auth not ready yet, please wait a moment.");return;}
-  tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
+  tokenClient.requestAccessToken({prompt:"none",login_hint:"outamavongsa.toto@gmail.com"});
 }
 function ensureDriveToken(){
   return new Promise(function(resolve,reject){
     if(!initGoogleAuth())return reject(new Error("Google Identity Services not ready. Try again in a moment."));
     if(accessToken)return resolve(accessToken);
     tokenClient.callback=function(resp){if(!resp||!resp.access_token)return reject(new Error("No access token returned."));accessToken=resp.access_token;loadBackgroundFromDrive();resolve(accessToken);};
-    tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
+    tokenClient.requestAccessToken({prompt:"none",login_hint:"outamavongsa.toto@gmail.com"});
   });
 }
 
