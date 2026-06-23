@@ -779,7 +779,9 @@ function generatePdf(payload){
   var leftW=CW*0.50;  /* strict left half */
   var leftColW=leftW/2-3; /* each sub-column within left half */
   /* Bank Details — left quarter */
-  var bX=ML,bY=afterTable;
+  /* Anchor bank+terms near bottom — use fixed Y unless content pushes lower */
+  var bottomAnchorY=H-MB-95; /* ~191mm from top, above sig area */
+  var bX=ML,bY=Math.max(afterTotals+4,bottomAnchorY);
   if(payload.bankName||payload.accountName||payload.accountNumber){
     doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
     doc.text("BANK DETAILS",bX,bY);bY+=2;
@@ -797,7 +799,7 @@ function generatePdf(payload){
     });
   }
   /* Terms & Conditions — right quarter of left half */
-  var tX=ML+leftW/2+2,tY2=afterTable;
+  var tX=ML+leftW/2+2,tY2=Math.max(afterTotals+4,bottomAnchorY);
   doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
   doc.text("TERMS & CONDITIONS",tX,tY2);tY2+=2;
   doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(tX,tY2,tX+40,tY2);tY2+=5;
@@ -1518,12 +1520,14 @@ function renderQI(){
         '</div>'+
       '</div>'+
     '</div>'+
-    '<div style="display:flex;gap:24px;margin-top:4px">'+
-      '<div style="flex:1">'+bankHTML+'</div>'+
-      '<div style="flex:1">'+termsHTML+'</div>'+
     '</div>'+
+    /* Bank+Terms+Sig+Footer all pinned to bottom */
+    '<div>'+
+      '<div style="display:flex;gap:24px;margin-bottom:16px">'+
+        '<div style="flex:1">'+bankHTML+'</div>'+
+        '<div style="flex:1">'+termsHTML+'</div>'+
+      '</div>'+
     '</div>'+
-    /* Signature + Footer pinned to bottom */
     sigHTML+footerHTML;
 }
 
