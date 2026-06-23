@@ -758,6 +758,25 @@ async function saveLocal(){
   if(!payload.customerName)return alert("Please enter Customer Name");
   setGenerating(true);
   try{
+    // 1. Get Drive token FIRST (before any file download to keep user gesture alive)
+    initGoogleAuth();
+    var driveDocType=(payload.docType||"Quotation");
+    if(tokenClient){
+      try{
+        await new Promise(function(resolve){
+          var timer=setTimeout(resolve,4000);
+          var prev=tokenClient.callback;
+          tokenClient.callback=function(resp){
+            clearTimeout(timer);
+            tokenClient.callback=prev;
+            if(resp&&resp.access_token){accessToken=resp.access_token;}
+            resolve();
+          };
+          tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
+        });
+      }catch(te){console.warn("Drive silent token failed:",te);}
+    }
+    // 2. Save to localStorage
     if(editingDocId){
       var origRows=dbLoadAll();var origRow=origRows.find(function(r){return r._id===editingDocId;});
       if(origRow&&origRow.docType===payload.docType){dbUpdate(editingDocId,payload);}else{dbAdd(payload);}
@@ -765,24 +784,14 @@ async function saveLocal(){
     }
     else{dbAdd(payload);}
     renderSavedList();
+    // 3. Generate & download PDF
     var pdfResult=generatePdf(payload);
     downloadPdfBase64(pdfResult.base64,pdfResult.name);
-    // Upload to Drive silently (no popup)
-    try{
-      var docType=(payload.docType||"Quotation");
-      if(tokenClient){
-        await new Promise(function(resolve){
-          var prev=tokenClient.callback;
-          tokenClient.callback=function(resp){
-            tokenClient.callback=prev;
-            if(resp&&resp.access_token){accessToken=resp.access_token;}
-            resolve();
-          };
-          tokenClient.requestAccessToken({prompt:"",login_hint:"outamavongsa.toto@gmail.com"});
-        });
-      }
-      if(accessToken){await uploadPdfToDriveFolder(docType,pdfResult.name,pdfResult.base64);}
-    }catch(e){console.warn("Drive upload skipped:",e);}
+    // 4. Upload to Drive (token already obtained above)
+    if(accessToken){
+      try{await uploadPdfToDriveFolder(driveDocType,pdfResult.name,pdfResult.base64);}
+      catch(ue){console.warn("Drive upload skipped:",ue);}
+    }
   }catch(err){console.error(err);alert("Error: "+err.message);}
   finally{setGenerating(false);}
 }
