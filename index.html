@@ -623,182 +623,304 @@ function buildPayload(){
 
 function generatePdf(payload){
   if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("jsPDF not loaded.");
-  var jsPDF=window.jspdf.jsPDF;var doc=new jsPDF({unit:"mm",format:"a4"});
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:"mm",format:"a4"});
   if(typeof doc.autoTable!=="function")throw new Error("autoTable not loaded.");
-  if(PDF_FONT_READY&&window.__PDF_FONTS__){var f=window.__PDF_FONTS__;doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}}
-  function SF(s){if(PDF_FONT_READY&&window.__PDF_FONTS__)doc.setFont("NotoSansLao",s||"normal");else doc.setFont("helvetica",s||"normal");}
-  var W=210,H=297,L=18,R=18,T=15,CW=W-L-R;
-  var NAVY=[15,39,71],CHAR=[50,50,50],GRAY=[130,130,130],LINE=[200,205,215],WHITE=[255,255,255];
+
+  /* --- Fonts --- */
+  if(PDF_FONT_READY&&window.__PDF_FONTS__){
+    var f=window.__PDF_FONTS__;
+    doc.addFileToVFS("NotoSansLao-Regular.ttf",f.regB64);
+    doc.addFont("NotoSansLao-Regular.ttf","NotoSansLao","normal");
+    if(f.boldB64){doc.addFileToVFS("NotoSansLao-Bold.ttf",f.boldB64);doc.addFont("NotoSansLao-Bold.ttf","NotoSansLao","bold");}
+  }
+  var FONT=PDF_FONT_READY&&window.__PDF_FONTS__?"NotoSansLao":"helvetica";
+  function SF(s){doc.setFont(FONT,s||"normal");}
+
+  /* --- Page constants --- */
+  var W=210,H=297,ML=18,MR=18,MT=18,MB=15,CW=W-ML-MR; // CW=174mm
+
+  /* --- Colors (#0F2A4A navy, #E5E7EB light gray) --- */
+  var NAVY=[15,42,74],LGRAY=[229,231,235],CHAR=[45,45,45],GRAY=[120,120,120],WHITE=[255,255,255];
+
+  /* --- Number format --- */
   var nf0=new Intl.NumberFormat("en-US",{maximumFractionDigits:0});
   var nf2=new Intl.NumberFormat("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
   function money(n){var cur=(payload.currency||"LAK").toUpperCase();var v=Number(n||0);return cur==="LAK"?nf0.format(v):nf2.format(v);}
+
   var isInv=(payload.docType||"").toLowerCase()==="invoice";
   var TITLE=(payload.docType||"QUOTATION").toUpperCase();
-  var DOCNO_LABEL=isInv?"Invoice No.":"Quotation No.";
-  var DATE_LABEL=isInv?"Invoice Date":"Quotation Date";
+  var NO_LABEL=isInv?"Invoice No.":"Quotation No.";
+  var DT_LABEL=isInv?"Invoice Date":"Quotation Date";
 
-  /* ── Watermark background ── */
-  if(BG_IMAGE_DATAURL){try{var bgf=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgf,0,0,W,H);}catch(e){}}
+  /* ================================================================
+     WATERMARK BACKGROUND
+  ================================================================ */
+  if(BG_IMAGE_DATAURL){
+    try{var bgf=BG_IMAGE_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";doc.addImage(BG_IMAGE_DATAURL,bgf,0,0,W,H);}catch(e){}
+  }
 
-  /* ── LOGO top-left ── */
-  var y=T;
-  var logoH=0,logoW=0;
-  if(LOGO_DATAURL){try{var fmt=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";var lp=doc.getImageProperties(LOGO_DATAURL);var sc=Math.min(48/lp.width,32/lp.height);logoW=lp.width*sc;logoH=lp.height*sc;doc.addImage(LOGO_DATAURL,fmt,L,y,logoW,logoH);}catch(e){}}
-  /* Company name below logo */
-  var compY=y+logoH+3;
-  doc.setFontSize(7.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-  doc.text("GLORI CREATIVITY SOLE CO., LTD.",L,compY);
+  /* ================================================================
+     HEADER
+  ================================================================ */
+  var y=MT;
 
-  /* ── TITLE top-right ── */
-  doc.setFontSize(36);SF("bold");doc.setTextColor.apply(doc,NAVY);
-  doc.text(TITLE,W-R,y+20,{align:"right"});
+  /* -- Logo top-left -- */
+  var logoBottomY=y;
+  if(LOGO_DATAURL){
+    try{
+      var fmt=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
+      var lp=doc.getImageProperties(LOGO_DATAURL);
+      var maxW=52,maxH=28;
+      var sc=Math.min(maxW/lp.width,maxH/lp.height);
+      var lw=lp.width*sc,lh=lp.height*sc;
+      doc.addImage(LOGO_DATAURL,fmt,ML,y,lw,lh);
+      logoBottomY=y+lh;
+    }catch(e){}
+  }
 
-  /* ── CLIENT + META two-column grid ── */
-  var gridY=compY+8;
-  /* Left: client fields */
+  /* -- Company name below logo (11px → 8pt) -- */
+  doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);
+  doc.text("GLORI CREATIVITY SOLE CO., LTD.",ML,logoBottomY+4);
+  var leftBottomY=logoBottomY+4;
+
+  /* -- QUOTATION title top-right (30px → 22pt) -- */
+  doc.setFontSize(22);SF("bold");doc.setTextColor.apply(doc,NAVY);
+  doc.text(TITLE,W-MR,y+16,{align:"right"});
+
+  /* -- Meta fields right side (11px → 8pt) -- */
+  var metaFields=[
+    [NO_LABEL, payload.docNo||"—"],
+    [DT_LABEL, payload.docDate||"—"],
+    ["Validity","30 Days"],
+    ["Currency",payload.currency||"LAK"],
+    ["Project",payload.project||"—"]
+  ];
+  var mY=y+22;
+  var mL=W-MR-86,mC=W-MR-34,mV=W-MR;
+  metaFields.forEach(function(r){
+    doc.setFontSize(8);SF("normal");doc.setTextColor.apply(doc,GRAY);
+    doc.text(r[0],mL,mY);doc.text(":",mC,mY);
+    SF("normal");doc.setTextColor.apply(doc,CHAR);
+    doc.text(String(r[1]),mV,mY,{align:"right"});
+    mY+=5;
+  });
+
+  /* -- Customer fields left side (11px → 8pt) -- */
+  var cY=leftBottomY+8;
   var clientFields=[
     ["Customer",payload.customerName||"—"],
     ["Attention",payload.attentionTo||""],
     ["Address",payload.address||""],
     ["Contact",payload.contact||""]
   ];
-  var labelW=22,colonX=L+labelW,valueX=L+labelW+4;
-  var rowH=5.2;
+  var cLabelX=ML,cColonX=ML+20,cValX=ML+23;
   clientFields.forEach(function(r){
     if(!r[1])return;
-    doc.setFontSize(8.5);SF("normal");doc.setTextColor.apply(doc,GRAY);doc.text(r[0],L,gridY);
-    doc.setTextColor.apply(doc,CHAR);doc.text(":",colonX,gridY);
-    SF("normal");doc.setTextColor.apply(doc,CHAR);
-    var vlines=doc.splitTextToSize(r[1],CW*0.45-labelW-4);
-    doc.text(vlines,valueX,gridY);
-    gridY+=vlines.length*rowH;
+    doc.setFontSize(8);SF("normal");doc.setTextColor.apply(doc,GRAY);
+    doc.text(r[0],cLabelX,cY);
+    doc.text(":",cColonX,cY);
+    doc.setTextColor.apply(doc,CHAR);
+    var lines=doc.splitTextToSize(r[1],CW*0.48-24);
+    doc.text(lines,cValX,cY);
+    cY+=lines.length*5;
   });
 
-  /* Right: meta fields */
-  var metaFields=[
-    [DOCNO_LABEL,payload.docNo||"—"],
-    [DATE_LABEL,payload.docDate||"—"],
-    ["Validity","30 Days"],
-    ["Currency",payload.currency||"LAK"],
-    ["Project",payload.project||"—"]
-  ];
-  var mStartY=compY+8;
-  var mLabelX=W-R-80,mColonX=W-R-32,mValX=W-R;
-  metaFields.forEach(function(r){
-    doc.setFontSize(8.5);SF("normal");doc.setTextColor.apply(doc,GRAY);doc.text(r[0],mLabelX,mStartY);
-    doc.setTextColor.apply(doc,GRAY);doc.text(":",mColonX,mStartY);
-    SF("normal");doc.setTextColor.apply(doc,CHAR);doc.text(String(r[1]),mValX,mStartY,{align:"right"});
-    mStartY+=rowH;
-  });
+  /* ================================================================
+     DIVIDER
+  ================================================================ */
+  var divY=Math.max(cY,mY)+5;
+  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.6);
+  doc.line(ML,divY,W-MR,divY);
 
-  /* ── Divider ── */
-  var divY=Math.max(gridY,mStartY)+5;
-  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.7);doc.line(L,divY,W-R,divY);
-
-  /* ── ITEMS TABLE ── */
-  var tTop=divY+4;
+  /* ================================================================
+     TABLE
+  ================================================================ */
+  var tY=divY+4;
   var items=payload.items||[];
-  var COL={no:10,img:26,desc:0,price:24,qty:16,amt:26};
-  COL.desc=CW-COL.no-COL.img-COL.price-COL.qty-COL.amt;
-  var body=items.length?items.map(function(it,i){
-    var q=Number(it.qty||0),u=Number(it.unitPrice||0);
-    return[String(i+1).padStart(2,"0"),"",String(it.detail||""),money(u),String(q),money(q*u)];
-  }):[ ["01","","—","0","0","0"]];
 
-  doc.autoTable({startY:tTop,margin:{left:L,right:R},tableWidth:CW,
-    head:[["No.","Image","Description","Unit Price","Qty","Amount"]],body:body,theme:"grid",
-    styles:{font:PDF_FONT_READY?"NotoSansLao":"helvetica",fontSize:10,
-      cellPadding:{top:4,bottom:4,left:3,right:3},valign:"middle",
-      lineColor:LINE,lineWidth:0.3,textColor:CHAR,fillColor:WHITE,overflow:"linebreak"},
-    headStyles:{font:PDF_FONT_READY?"NotoSansLao":"helvetica",fillColor:NAVY,textColor:WHITE,
-      fontStyle:"bold",fontSize:10,halign:"center",valign:"middle",minCellHeight:12},
+  /* Column widths as % of CW=174mm */
+  var cNo=CW*0.07,cIm=CW*0.17,cDs=CW*0.32,cPr=CW*0.16,cQt=CW*0.10,cAm=CW*0.18;
+
+  var tableBody=items.length?items.map(function(it,i){
+    var q=Number(it.qty||0),u=Number(it.unitPrice||0);
+    return[String(i+1).padStart(2,"0"),"",it.detail||"",money(u),String(q||""),money(q*u)];
+  }):[["01","","—","0","0","0"]];
+
+  doc.autoTable({
+    startY:tY,
+    margin:{left:ML,right:MR},
+    tableWidth:CW,
+    head:[["No.","Image","Description","Unit Price","Qty","Amount"]],
+    body:tableBody,
+    theme:"grid",
+    styles:{
+      font:FONT,fontSize:8,
+      cellPadding:{top:3,bottom:3,left:3,right:3},
+      valign:"middle",lineColor:LGRAY,lineWidth:0.3,
+      textColor:CHAR,fillColor:WHITE,overflow:"linebreak"
+    },
+    headStyles:{
+      font:FONT,fillColor:NAVY,textColor:WHITE,
+      fontStyle:"bold",fontSize:9,
+      halign:"center",valign:"middle",minCellHeight:10
+    },
     columnStyles:{
-      0:{cellWidth:COL.no,halign:"center"},
-      1:{cellWidth:COL.img,halign:"center"},
-      2:{cellWidth:COL.desc,halign:"left"},
-      3:{cellWidth:COL.price,halign:"right"},
-      4:{cellWidth:COL.qty,halign:"center"},
-      5:{cellWidth:COL.amt,halign:"right"}
+      0:{cellWidth:cNo,halign:"center"},
+      1:{cellWidth:cIm,halign:"center"},
+      2:{cellWidth:cDs,halign:"left"},
+      3:{cellWidth:cPr,halign:"right"},
+      4:{cellWidth:cQt,halign:"center"},
+      5:{cellWidth:cAm,halign:"right"}
     },
     didParseCell:function(d){
-      if(d.section==="body"&&d.column.index===1){d.cell.styles.minCellHeight=30;d.cell.text=[];}
+      if(d.section==="body"&&d.column.index===1){
+        d.cell.styles.minCellHeight=26;d.cell.text=[];
+      }
     },
     didDrawCell:function(d){
       if(d.section==="body"&&d.column.index===1){
-        var it=items[d.row.index];var ph=it&&it.photo;
-        var cx=d.cell.x+2,cyw=d.cell.y+2,cw=d.cell.width-4,ch=d.cell.height-4;
-        if(ph){try{var fi=ph.startsWith("data:image/png")?"PNG":"JPEG";var pp=doc.getImageProperties(ph);var sc=Math.min(cw/pp.width,ch/pp.height);doc.addImage(ph,fi,cx+(cw-pp.width*sc)/2,cyw+(ch-pp.height*sc)/2,pp.width*sc,pp.height*sc);}catch(e){}}
+        var it=items[d.row.index];
+        if(it&&it.photo){
+          try{
+            var fi=it.photo.startsWith("data:image/png")?"PNG":"JPEG";
+            var ip=doc.getImageProperties(it.photo);
+            var maxPx=26*0.264583; // 70px in mm ≈ 18.5mm (fit within cell)
+            var sc2=Math.min((d.cell.width-4)/ip.width,(d.cell.height-4)/ip.height,maxPx/ip.height,maxPx/ip.width);
+            var iw=ip.width*sc2,ih=ip.height*sc2;
+            doc.addImage(it.photo,fi,
+              d.cell.x+(d.cell.width-iw)/2,
+              d.cell.y+(d.cell.height-ih)/2,
+              iw,ih);
+          }catch(e){}
+        }
       }
     }
   });
 
-  /* ── TOTALS (right-aligned, no box for sub rows) ── */
-  var totY=doc.lastAutoTable.finalY+6;
+  /* ================================================================
+     TOTAL SUMMARY  (right ~45% of page)
+  ================================================================ */
+  var totY=doc.lastAutoTable.finalY+5;
   var sub=0;items.forEach(function(it){sub+=Number(it.qty||0)*Number(it.unitPrice||0);});
-  var disc=Number(payload.discount||0),net=Math.max(0,sub-disc),vat=payload.vatEnabled?net*0.1:0,tot=net+vat;
-  var advP=Math.max(0,Math.min(100,Number(payload.advancePercent||0))),adv=tot*(advP/100),bal=Math.max(0,tot-adv);
-  var sbX=L+CW*0.45,sbW=CW*0.55;
-  function drawTotRow(lbl,val){
-    doc.setFontSize(9);SF("normal");doc.setTextColor.apply(doc,GRAY);doc.text(lbl,sbX+4,totY);
-    doc.setTextColor.apply(doc,CHAR);SF("normal");doc.text(val,sbX+sbW-2,totY,{align:"right"});
-    totY+=6;
-    doc.setDrawColor.apply(doc,LINE);doc.setLineWidth(0.2);doc.line(sbX,totY-2,sbX+sbW,totY-2);
-  }
-  if(disc>0)drawTotRow("Discount","- "+money(disc));
-  drawTotRow("Sub Total",money(sub));
-  drawTotRow(payload.vatEnabled?"Tax (10%)":"Tax (0%)",money(vat));
-  if(advP>0)drawTotRow("Advance ("+advP+"%)","- "+money(adv));
-  /* BALANCE DUE box */
-  totY+=3;
-  doc.setFillColor.apply(doc,NAVY);doc.rect(sbX,totY,sbW,16,"F");
-  doc.setFontSize(10);SF("bold");doc.setTextColor.apply(doc,WHITE);doc.text("BALANCE DUE",sbX+5,totY+10);
-  doc.setFontSize(16);doc.text(money(bal),sbX+sbW-4,totY+10.5,{align:"right"});
-  totY+=22;
+  var disc=Number(payload.discount||0);
+  var net=Math.max(0,sub-disc);
+  var vat=payload.vatEnabled?net*0.10:0;
+  var tot=net+vat;
+  var advP=Math.max(0,Math.min(100,Number(payload.advancePercent||0)));
+  var adv=tot*(advP/100);
+  var bal=Math.max(0,tot-adv);
 
-  /* ── BANK DETAILS ── */
+  var sumX=ML+CW*0.55,sumW=CW*0.45; // 45% width on right
+
+  function sumRow(lbl,val,showLine){
+    doc.setFontSize(8);SF("normal");
+    doc.setTextColor.apply(doc,GRAY);doc.text(lbl,sumX+3,totY);
+    doc.setTextColor.apply(doc,CHAR);doc.text(val,sumX+sumW-2,totY,{align:"right"});
+    totY+=5.5;
+    if(showLine!==false){
+      doc.setDrawColor.apply(doc,LGRAY);doc.setLineWidth(0.25);
+      doc.line(sumX,totY-1,sumX+sumW,totY-1);
+    }
+  }
+
+  sumRow("Sub Total",money(sub));
+  if(disc>0)sumRow("Discount","- "+money(disc));
+  sumRow(payload.vatEnabled?"Tax (10%)":"Tax (0%)",money(vat));
+  if(advP>0)sumRow("Advance Payment ("+advP+"%)","- "+money(adv));
+
+  /* Balance Due box */
+  totY+=2;
+  doc.setFillColor.apply(doc,NAVY);
+  doc.rect(sumX,totY,sumW,14,"F");
+  /* Label: 14px → 10.5pt */
+  doc.setFontSize(10.5);SF("bold");doc.setTextColor.apply(doc,WHITE);
+  doc.text("BALANCE DUE",sumX+4,totY+9);
+  /* Amount: 18px → 13.5pt */
+  doc.setFontSize(13.5);SF("bold");
+  doc.text(money(bal),sumX+sumW-3,totY+9.5,{align:"right"});
+  totY+=19;
+
+  /* ================================================================
+     BANK DETAILS  (left side, below totals)
+  ================================================================ */
+  var bankY=doc.lastAutoTable.finalY+5; // align with table bottom
   if(payload.bankName||payload.accountName||payload.accountNumber){
-    doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);doc.text("BANK DETAILS",L,totY);totY+=1.5;
-    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(L,totY,L+38,totY);totY+=5;
+    doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
+    doc.text("BANK DETAILS",ML,bankY);bankY+=2;
+    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);
+    doc.line(ML,bankY,ML+36,bankY);bankY+=5;
     var bRows=[];
     if(payload.bankName)bRows.push(["Bank:",payload.bankName]);
     if(payload.accountName)bRows.push(["Acct Name:",payload.accountName]);
     if(payload.accountNumber)bRows.push(["Acct No.:",payload.accountNumber]);
     bRows.forEach(function(br){
-      doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,CHAR);doc.text(br[0],L,totY);
-      SF("normal");doc.text(br[1],L+22,totY);totY+=5;
+      doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,CHAR);
+      doc.text(br[0],ML,bankY);
+      SF("normal");
+      var vl=doc.splitTextToSize(br[1],CW*0.50-22);
+      doc.text(vl,ML+22,bankY);
+      bankY+=vl.length*4.8;
     });
-    totY+=3;
+    bankY+=3;
   }
 
-  /* ── TERMS & CONDITIONS ── */
-  if(totY+24<H-28){
-    doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);doc.text("TERMS & CONDITIONS",L,totY);totY+=1.5;
-    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(L,totY,L+52,totY);totY+=5;
-    var terms=["1. Quotation valid for 30 days from the date of issue.",
+  /* ================================================================
+     TERMS & CONDITIONS
+  ================================================================ */
+  var termsY=Math.max(bankY,totY);
+  if(termsY+22<H-52){
+    doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
+    doc.text("TERMS & CONDITIONS",ML,termsY);termsY+=2;
+    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);
+    doc.line(ML,termsY,ML+50,termsY);termsY+=5;
+    var terms=[
+      "1. Quotation valid for 30 days from the date of issue.",
       "2. Production begins after written confirmation and advance payment received.",
       "3. Delivery timeline depends on final approved artwork and production schedule.",
-      "4. Prices are quoted in "+(payload.currency||"LAK")+" unless otherwise specified."];
-    doc.setFontSize(8);SF("normal");doc.setTextColor.apply(doc,CHAR);
-    terms.forEach(function(t){var tl=doc.splitTextToSize(t,CW*0.65);doc.text(tl,L,totY);totY+=tl.length*4.5;});
+      "4. Prices are quoted in "+(payload.currency||"LAK")+" unless otherwise specified."
+    ];
+    doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,CHAR);
+    terms.forEach(function(t){
+      var tl=doc.splitTextToSize(t,CW*0.62);
+      doc.text(tl,ML,termsY);
+      termsY+=tl.length*4.5;
+    });
   }
 
-  /* ── SIGNATURE (2 boxes: Prepared By + Client Acceptance) ── */
-  var sigY=H-50;
-  var sw=(CW/2)-8;
-  var sig2=[["Prepared By",L],["Client Acceptance",L+CW/2+8]];
-  sig2.forEach(function(s){
-    doc.setDrawColor.apply(doc,LINE);doc.setLineWidth(0.4);
-    doc.line(s[1],sigY+14,s[1]+sw,sigY+14);
-    doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,CHAR);doc.text(s[0],s[1]+sw/2,sigY+8,{align:"center"});
-    doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,GRAY);
-    var sub2=s[0]==="Prepared By"?"Name & Signature":"Name, Signature & Stamp";
-    doc.text(sub2,s[1]+sw/2,sigY+20,{align:"center"});
-  });
+  /* ================================================================
+     SIGNATURE SECTION  (anchored near bottom)
+  ================================================================ */
+  var sigAreaY=H-MB-38;
+  var sigLineW=58;
+  /* Prepared By — left */
+  var sig1X=ML+8;
+  doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,CHAR);
+  doc.text("Prepared By",sig1X+sigLineW/2,sigAreaY,{align:"center"});
+  doc.setDrawColor.apply(doc,LGRAY);doc.setLineWidth(0.4);
+  doc.line(sig1X,sigAreaY+12,sig1X+sigLineW,sigAreaY+12);
+  doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,GRAY);
+  doc.text("Name & Signature",sig1X+sigLineW/2,sigAreaY+18,{align:"center"});
 
-  /* ── FOOTER BAR ── */
-  doc.setFillColor.apply(doc,NAVY);doc.rect(0,H-14,W,14,"F");
-  doc.setFontSize(8);SF("normal");doc.setTextColor.apply(doc,WHITE);
-  doc.text("GLORI CREATIVITY SOLE CO., LTD.  ·  +856 20 95 577 556  ·  customer_sv@glori-cre.org  ·  glori-cre.org",W/2,H-5.5,{align:"center"});
+  /* Client Acceptance — right */
+  var sig2X=W-MR-sigLineW-8;
+  doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,CHAR);
+  doc.text("Client Acceptance",sig2X+sigLineW/2,sigAreaY,{align:"center"});
+  doc.setDrawColor.apply(doc,LGRAY);doc.setLineWidth(0.4);
+  doc.line(sig2X,sigAreaY+12,sig2X+sigLineW,sigAreaY+12);
+  doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,GRAY);
+  doc.text("Name, Signature & Stamp",sig2X+sigLineW/2,sigAreaY+18,{align:"center"});
+
+  /* ================================================================
+     FOOTER BAR
+  ================================================================ */
+  doc.setFillColor.apply(doc,NAVY);
+  doc.rect(0,H-14,W,14,"F");
+  doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,WHITE);
+  doc.text(
+    "GLORI CREATIVITY SOLE CO., LTD.  ·  +856 20 95 577 556  ·  customer_sv@glori-cre.org  ·  glori-cre.org",
+    W/2,H-5.5,{align:"center"}
+  );
 
   var _pdfName=(payload.docType||"Doc")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf";
   return{base64:doc.output("datauristring").split(",")[1],name:_pdfName};
