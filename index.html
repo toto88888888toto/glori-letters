@@ -1552,7 +1552,10 @@ function renderQI(){
   '</div>';
 
   applyPreviewBg('qi-preview');
+  previewEl.style.display='flex';
+  previewEl.style.flexDirection='column';
   previewEl.innerHTML=
+    '<div style="flex:1">'+
     /* Header */
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">'+
       headerLogoHTML+
@@ -1589,8 +1592,9 @@ function renderQI(){
     '</div>'+
     bankHTML+
     termsHTML+
-    sigHTML+
-    footerHTML;
+    '</div>'+
+    /* Signature + Footer pinned to bottom */
+    '<div>'+sigHTML+footerHTML+'</div>';
 }
 
 /* === LETTER SECTION === */
