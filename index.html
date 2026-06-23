@@ -1426,27 +1426,27 @@ function renderQI(){
   if(advPct>0)totHTML+='<tr><td style="padding:3px 12px 3px 0;color:#888;font-size:11px;white-space:nowrap">Advance Payment ('+advPct+'%)</td><td style="padding:3px 0;text-align:right;font-size:11px;color:#333">'+mn(advance)+'</td></tr>';
 
   /* -- Bank details -- */
-  var bankHTML='';
-  if(bankName||accountName||accountNumber){
-    var bRows=[];
-    if(bankName)bRows.push(['Bank:',bankName]);
-    if(accountName)bRows.push(['Acct Name:',accountName]);
-    if(accountNumber)bRows.push(['Acct No.:',accountNumber]);
-    bankHTML='<div style="margin-top:18px">'+
-      '<div style="font-size:8.5px;font-weight:700;color:'+NAVY+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;border-bottom:1.5px solid '+NAVY+';display:inline-block;padding-bottom:1px">BANK DETAILS</div>'+
-      '<table style="margin-top:6px;border-collapse:collapse">'+
-        bRows.map(function(r){return '<tr>'+
-          '<td style="padding:2px 10px 2px 0;font-size:10.5px;font-weight:700;color:#333;white-space:nowrap">'+r[0]+'</td>'+
-          '<td style="padding:2px 0;font-size:10.5px;color:#444">'+r[1]+'</td>'+
-        '</tr>';}).join('')+
-      '</table>'+
-    '</div>';
-  }
+  /* -- Bank details — always show section, fill rows if selected -- */
+  var bRows=[];
+  if(bankName)bRows.push(['Bank Name',bankName]);
+  if(accountName)bRows.push(['Acct Name',accountName]);
+  if(accountNumber)bRows.push(['Acct No',accountNumber]);
+  var SEC_HD='font-size:8px;font-weight:700;color:'+NAVY+';text-transform:uppercase;letter-spacing:.08em;display:inline-block;border-bottom:1.5px solid '+NAVY+';padding-bottom:2px;margin-bottom:5px';
+  var bankHTML='<div>'+
+    '<div style="'+SEC_HD+'">BANK DETAILS</div>'+
+    (bRows.length?'<table style="margin-top:2px;border-collapse:collapse">'+
+      bRows.map(function(r){return '<tr>'+
+        '<td style="padding:1px 6px 1px 0;font-size:7.5px;font-weight:600;color:#374151;white-space:nowrap">'+r[0]+'</td>'+
+        '<td style="padding:1px 4px;font-size:7.5px;color:#374151">:</td>'+
+        '<td style="padding:1px 0;font-size:7.5px;color:#374151;max-width:160px">'+r[1]+'</td>'+
+      '</tr>';}).join('')+
+    '</table>':'<div style="font-size:7.5px;color:#9CA3AF;margin-top:4px;font-style:italic">No bank selected</div>')+
+  '</div>';
 
   /* -- Terms -- */
-  var termsHTML='<div style="margin-top:14px">'+
-    '<div style="font-size:8.5px;font-weight:700;color:'+NAVY+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;border-bottom:1.5px solid '+NAVY+';display:inline-block;padding-bottom:1px">TERMS &amp; CONDITIONS</div>'+
-    '<div style="margin-top:6px;font-size:10px;color:#444;line-height:1.7">'+
+  var termsHTML='<div>'+
+    '<div style="'+SEC_HD+'">TERMS &amp; CONDITIONS</div>'+
+    '<div style="margin-top:2px;font-size:7.5px;color:#374151;line-height:1.6">'+
       '<div>1. Quotation valid for 30 days from the date of issue.</div>'+
       '<div>2. Production begins after written confirmation and advance payment received.</div>'+
       '<div>3. Delivery timeline depends on final approved artwork and production schedule.</div>'+
@@ -1515,7 +1515,7 @@ function renderQI(){
     '</div>'+
     /* Bank+Terms+Sig+Footer all pinned to bottom */
     '<div>'+
-      '<div style="display:flex;gap:24px;margin-bottom:16px">'+
+      '<div style="display:flex;gap:24px;margin-bottom:14px;margin-top:16px">'+
         '<div style="flex:1">'+bankHTML+'</div>'+
         '<div style="flex:1">'+termsHTML+'</div>'+
       '</div>'+
