@@ -776,7 +776,7 @@ function generatePdf(payload){
   /* ══════════════════════════════════════════════════════
      BANK DETAILS (left) + TERMS & CONDITIONS (right) — same row
   ══════════════════════════════════════════════════════ */
-  var sectionY=afterTable; /* align top with totals */
+  var sectionY=afterTotals+2; /* start after totals box */
   var secW=CW*0.5-4;
   /* --- BANK DETAILS left --- */
   var bY=sectionY;
