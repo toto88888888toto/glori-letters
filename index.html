@@ -891,21 +891,28 @@ async function saveLocal(){
     }
     else{dbAdd(payload);}
     renderSavedList();
-    // 3. Capture preview HTML as PDF using html2pdf (matches preview exactly)
+    // 3. Capture preview as PDF using html2pdf
     var _pdfName=(payload.docType||"Quotation")+"-"+(payload.docNo||"document").replace(/[^\w\-]+/g,"_")+".pdf";
     var _el=document.getElementById("qi-preview");
+    // Fix element to exact A4 size for capture
+    var _prevMinH=_el.style.minHeight,_prevH=_el.style.height,_prevOv=_el.style.overflow;
+    _el.style.minHeight="842px";_el.style.height="842px";_el.style.overflow="hidden";
     var _opt={
       margin:0,
       filename:_pdfName,
-      image:{type:"jpeg",quality:0.98},
-      html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false},
-      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}
+      image:{type:"jpeg",quality:0.99},
+      html2canvas:{scale:2,useCORS:true,allowTaint:true,logging:false,width:595,height:842,windowWidth:595},
+      jsPDF:{unit:"px",format:[595,842],orientation:"portrait",hotfixes:["px_scaling"]}
     };
-    // 4. Generate PDF blob for download + Drive upload
-    var _pdfBase64=await html2pdf().set(_opt).from(_el).outputPdf("datauristring").then(function(uri){
-      html2pdf().set(_opt).from(_el).save(); // triggers download
-      return uri.split(",")[1];
-    });
+    // Single pass: get blob, download, get base64 for Drive
+    var _pdfBlob=await html2pdf().set(_opt).from(_el).outputPdf("blob");
+    // Restore element
+    _el.style.minHeight=_prevMinH;_el.style.height=_prevH;_el.style.overflow=_prevOv;
+    // Download
+    var _url=URL.createObjectURL(_pdfBlob);
+    var _a=document.createElement("a");_a.href=_url;_a.download=_pdfName;document.body.appendChild(_a);_a.click();document.body.removeChild(_a);setTimeout(function(){URL.revokeObjectURL(_url);},1000);
+    // Base64 for Drive
+    var _pdfBase64=await new Promise(function(res){var r=new FileReader();r.onloadend=function(){res(r.result.split(",")[1]);};r.readAsDataURL(_pdfBlob);});
     if(accessToken){
       try{
         await uploadPdfToDriveFolder(driveDocType,_pdfName,_pdfBase64);
