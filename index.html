@@ -748,13 +748,16 @@ function generatePdf(payload){
   });
 
   /* ══════════════════════════════════════════════════════
-     TOTALS — right 45% below table
+     LAYOUT: Left 52% = Bank+Terms stacked | Right 46% = Totals
+     Both start at afterTable so they sit side by side
   ══════════════════════════════════════════════════════ */
   var afterTable=doc.lastAutoTable.finalY+4;
   var sub=0;items.forEach(function(it){sub+=Number(it.qty||0)*Number(it.unitPrice||0);});
   var disc=Number(payload.discount||0),net=Math.max(0,sub-disc),vat=payload.vatEnabled?net*0.1:0,tot=net+vat;
   var advP=Math.max(0,Math.min(100,Number(payload.advancePercent||0))),adv=tot*(advP/100),bal=Math.max(0,tot-adv);
-  var sumX=ML+CW*0.55,sumW=CW*0.45;
+
+  /* Right column: totals (46% width, starts at 54% from left) */
+  var sumX=ML+CW*0.54,sumW=CW*0.46;
   var totY=afterTable;
   function sumRow(lbl,val){
     doc.setFontSize(9);SF("normal");doc.setTextColor.apply(doc,NAVY);
@@ -765,7 +768,6 @@ function generatePdf(payload){
   if(disc>0)sumRow("Discount","- "+money(disc));
   sumRow("Tax ("+(payload.vatEnabled?"10":"0")+"%)",money(vat));
   if(advP>0)sumRow("Advance ("+advP+"%)",money(adv));
-  /* Balance DUE box */
   totY+=2;
   doc.setFillColor.apply(doc,NAVY);doc.rect(sumX,totY,sumW,12,"F");
   doc.setFontSize(10.5);SF("bold");doc.setTextColor.apply(doc,WHITE);
@@ -773,40 +775,38 @@ function generatePdf(payload){
   doc.setFontSize(13);doc.text(money(bal),sumX+sumW-3,totY+8,{align:"right"});
   var afterTotals=totY+16;
 
-  /* ══════════════════════════════════════════════════════
-     BANK DETAILS (left) + TERMS & CONDITIONS (right) — same row
-  ══════════════════════════════════════════════════════ */
-  var sectionY=afterTotals+2; /* start after totals box */
-  var secW=CW*0.5-4;
-  /* --- BANK DETAILS left --- */
-  var bY=sectionY;
+  /* Left column: Bank Details then Terms (max 50% width, no overlap with totals) */
+  var leftW=CW*0.50;  /* strict left half */
+  var leftColW=leftW/2-3; /* each sub-column within left half */
+  /* Bank Details — left quarter */
+  var bX=ML,bY=afterTable;
   if(payload.bankName||payload.accountName||payload.accountNumber){
     doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-    doc.text("BANK DETAILS",ML,bY);bY+=2;
-    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(ML,bY,ML+32,bY);bY+=5;
+    doc.text("BANK DETAILS",bX,bY);bY+=2;
+    doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(bX,bY,bX+30,bY);bY+=5;
     var bRows=[];
     if(payload.bankName)bRows.push(["Bank Name",payload.bankName]);
     if(payload.accountName)bRows.push(["Acct Name",payload.accountName]);
     if(payload.accountNumber)bRows.push(["Acct No",payload.accountNumber]);
     bRows.forEach(function(br){
-      doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,NAVY);
-      doc.text(br[0],ML,bY);doc.text(":",ML+18,bY);
+      doc.setFontSize(7.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
+      doc.text(br[0],bX,bY);doc.text(":",bX+16,bY);
       SF("normal");
-      var vl=doc.splitTextToSize(br[1],secW-20);
-      doc.text(vl,ML+20,bY);bY+=vl.length*4.8;
+      var vl=doc.splitTextToSize(br[1],leftColW-18);
+      doc.text(vl,bX+18,bY);bY+=vl.length*4.5;
     });
   }
-  /* --- TERMS right --- */
-  var tX=ML+CW/2+2,tY2=sectionY;
+  /* Terms & Conditions — right quarter of left half */
+  var tX=ML+leftW/2+2,tY2=afterTable;
   doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
   doc.text("TERMS & CONDITIONS",tX,tY2);tY2+=2;
-  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(tX,tY2,tX+48,tY2);tY2+=5;
+  doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);doc.line(tX,tY2,tX+40,tY2);tY2+=5;
   var terms=["1. Quotation valid for 30 days from the date of issue.",
     "2. Production begins after written confirmation and advance payment received.",
     "3. Delivery timeline depends on final approved artwork and production schedule.",
     "4. Prices are quoted in "+(payload.currency||"LAK")+" unless otherwise specified."];
   doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,NAVY);
-  terms.forEach(function(t){var tl=doc.splitTextToSize(t,secW);doc.text(tl,tX,tY2);tY2+=tl.length*4.5;});
+  terms.forEach(function(t){var tl=doc.splitTextToSize(t,leftColW);doc.text(tl,tX,tY2);tY2+=tl.length*4.5;});
 
   /* ══════════════════════════════════════════════════════
      SIGNATURE SECTION  — anchored above footer
