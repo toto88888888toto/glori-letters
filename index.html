@@ -842,38 +842,44 @@ function generatePdf(payload){
   totY+=19;
 
   /* ================================================================
-     BANK DETAILS  (left side, below totals)
+     BANK DETAILS (left col) + TERMS & CONDITIONS (right col) — same row
   ================================================================ */
-  var bankY=doc.lastAutoTable.finalY+5; // align with table bottom
+  var colStartY=Math.max(totY,doc.lastAutoTable.finalY+5);
+  var halfW=CW/2-6; // each column width
+  var bankCol=ML;        // left column x
+  var termsCol=ML+CW/2+6; // right column x
+
+  /* --- LEFT: Bank Details --- */
+  var bankY=colStartY;
+  var bankEndY=colStartY;
   if(payload.bankName||payload.accountName||payload.accountNumber){
     doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-    doc.text("BANK DETAILS",ML,bankY);bankY+=2;
+    doc.text("BANK DETAILS",bankCol,bankY);bankY+=2;
     doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);
-    doc.line(ML,bankY,ML+36,bankY);bankY+=5;
+    doc.line(bankCol,bankY,bankCol+36,bankY);bankY+=5;
     var bRows=[];
     if(payload.bankName)bRows.push(["Bank:",payload.bankName]);
     if(payload.accountName)bRows.push(["Acct Name:",payload.accountName]);
     if(payload.accountNumber)bRows.push(["Acct No.:",payload.accountNumber]);
     bRows.forEach(function(br){
       doc.setFontSize(8);SF("bold");doc.setTextColor.apply(doc,CHAR);
-      doc.text(br[0],ML,bankY);
+      doc.text(br[0],bankCol,bankY);
       SF("normal");
-      var vl=doc.splitTextToSize(br[1],CW*0.50-22);
-      doc.text(vl,ML+22,bankY);
+      var vl=doc.splitTextToSize(br[1],halfW-22);
+      doc.text(vl,bankCol+22,bankY);
       bankY+=vl.length*4.8;
     });
-    bankY+=3;
+    bankEndY=bankY;
   }
 
-  /* ================================================================
-     TERMS & CONDITIONS
-  ================================================================ */
-  var termsY=Math.max(bankY,totY);
+  /* --- RIGHT: Terms & Conditions --- */
+  var termsY=colStartY;
+  var termsEndY=colStartY;
   if(termsY+22<H-52){
     doc.setFontSize(8.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
-    doc.text("TERMS & CONDITIONS",ML,termsY);termsY+=2;
+    doc.text("TERMS & CONDITIONS",termsCol,termsY);termsY+=2;
     doc.setDrawColor.apply(doc,NAVY);doc.setLineWidth(0.5);
-    doc.line(ML,termsY,ML+50,termsY);termsY+=5;
+    doc.line(termsCol,termsY,termsCol+50,termsY);termsY+=5;
     var terms=[
       "1. Quotation valid for 30 days from the date of issue.",
       "2. Production begins after written confirmation and advance payment received.",
@@ -882,10 +888,11 @@ function generatePdf(payload){
     ];
     doc.setFontSize(7.5);SF("normal");doc.setTextColor.apply(doc,CHAR);
     terms.forEach(function(t){
-      var tl=doc.splitTextToSize(t,CW*0.62);
-      doc.text(tl,ML,termsY);
+      var tl=doc.splitTextToSize(t,halfW);
+      doc.text(tl,termsCol,termsY);
       termsY+=tl.length*4.5;
     });
+    termsEndY=termsY;
   }
 
   /* ================================================================
