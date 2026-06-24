@@ -819,7 +819,7 @@ function generatePdf(payload){
   /* ══════════════════════════════════════════════════════
      SIGNATURE SECTION  — anchored above footer
   ══════════════════════════════════════════════════════ */
-  var sigY=H-MB-42;
+  var sigY=Math.max(bY,tY2)+8;
   /* "Signature Section" label spaced */
   /* Two sig boxes centered with 28mm gap (80px≈28.2mm) */
   var sigLineW=62,sigGap=28;
