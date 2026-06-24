@@ -663,7 +663,7 @@ function generatePdf(payload){
     try{
       var fmt=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
       var lp=doc.getImageProperties(LOGO_DATAURL);
-      var sc=Math.min(36/lp.width,15/lp.height);
+      var sc=Math.min(52/lp.width,22/lp.height);
       var lw=lp.width*sc,lh=lp.height*sc;
       doc.addImage(LOGO_DATAURL,fmt,ML,y,lw,lh);
       logoH=lh;
@@ -1431,7 +1431,7 @@ function renderQI(){
     /* HEADER */
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-shrink:0">'+
       '<div>'+
-        '<img src="'+logoSrc+'" style="width:100.77px;height:42px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
+        '<img src="'+logoSrc+'" style="width:140px;height:58px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
         '<div style="font-size:7px;font-weight:400;color:'+NAVY+';text-transform:uppercase;letter-spacing:.3px;margin-top:3px;line-height:16px">GLORI CREATIVITY SOLE CO., LTD.</div>'+
       '</div>'+
       '<div style="font-size:30px;font-weight:700;color:'+NAVY+';letter-spacing:1.8px;line-height:40px">'+TITLE+'</div>'+
