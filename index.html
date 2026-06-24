@@ -671,7 +671,6 @@ function generatePdf(payload){
   }
   /* Company name under logo — 7px→5.25pt */
   doc.setFontSize(5.5);SF("normal");doc.setTextColor.apply(doc,NAVY);
-  doc.text("GLORI CREATIVITY SOLE CO., LTD.",ML,y+logoH+0.5);
 
   /* QUOTATION title right — 30px→22.5pt */
   doc.setFontSize(22.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
@@ -681,7 +680,7 @@ function generatePdf(payload){
      INFO ROW: two equal columns of label : value
      Left = customer info | Right = quotation meta
   ══════════════════════════════════════════════════════ */
-  var infoY=y+logoH+5;
+  var infoY=y+logoH+4;
   /* Match renderQI: 80px≈28mm label, 10px≈3.5mm colon, rest value; gap 32px≈11mm */
   var lLab=ML,lCol=ML+28,lVal=ML+31.5;       /* left column */
   var rLab=ML+CW/2+11,rCol=rLab+28,rVal=rLab+31.5; /* right column */
@@ -1432,7 +1431,6 @@ function renderQI(){
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-shrink:0">'+
       '<div>'+
         '<img src="'+logoSrc+'" style="width:190px;height:80px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
-        '<div style="font-size:7px;font-weight:400;color:'+NAVY+';text-transform:uppercase;letter-spacing:.3px;margin-top:0px;line-height:14px">GLORI CREATIVITY SOLE CO., LTD.</div>'+
       '</div>'+
       '<div style="font-size:30px;font-weight:700;color:'+NAVY+';letter-spacing:1.8px;line-height:40px">'+TITLE+'</div>'+
     '</div>'+
