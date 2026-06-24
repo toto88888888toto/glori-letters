@@ -663,7 +663,7 @@ function generatePdf(payload){
     try{
       var fmt=LOGO_DATAURL.startsWith("data:image/png")?"PNG":"JPEG";
       var lp=doc.getImageProperties(LOGO_DATAURL);
-      var sc=Math.min(52/lp.width,22/lp.height);
+      var sc=Math.min(72/lp.width,30/lp.height);
       var lw=lp.width*sc,lh=lp.height*sc;
       doc.addImage(LOGO_DATAURL,fmt,ML,y,lw,lh);
       logoH=lh;
@@ -671,7 +671,7 @@ function generatePdf(payload){
   }
   /* Company name under logo — 7px→5.25pt */
   doc.setFontSize(5.5);SF("normal");doc.setTextColor.apply(doc,NAVY);
-  doc.text("GLORI CREATIVITY SOLE CO., LTD.",ML,y+logoH+3.5);
+  doc.text("GLORI CREATIVITY SOLE CO., LTD.",ML,y+logoH+2);
 
   /* QUOTATION title right — 30px→22.5pt */
   doc.setFontSize(22.5);SF("bold");doc.setTextColor.apply(doc,NAVY);
@@ -681,7 +681,7 @@ function generatePdf(payload){
      INFO ROW: two equal columns of label : value
      Left = customer info | Right = quotation meta
   ══════════════════════════════════════════════════════ */
-  var infoY=y+logoH+9;
+  var infoY=y+logoH+7;
   /* Match renderQI: 80px≈28mm label, 10px≈3.5mm colon, rest value; gap 32px≈11mm */
   var lLab=ML,lCol=ML+28,lVal=ML+31.5;       /* left column */
   var rLab=ML+CW/2+11,rCol=rLab+28,rVal=rLab+31.5; /* right column */
@@ -1431,8 +1431,8 @@ function renderQI(){
     /* HEADER */
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-shrink:0">'+
       '<div>'+
-        '<img src="'+logoSrc+'" style="width:140px;height:58px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
-        '<div style="font-size:7px;font-weight:400;color:'+NAVY+';text-transform:uppercase;letter-spacing:.3px;margin-top:3px;line-height:16px">GLORI CREATIVITY SOLE CO., LTD.</div>'+
+        '<img src="'+logoSrc+'" style="width:190px;height:80px;object-fit:contain;object-position:left center;display:block" onerror="this.style.display=\'none\'">'+
+        '<div style="font-size:7px;font-weight:400;color:'+NAVY+';text-transform:uppercase;letter-spacing:.3px;margin-top:1px;line-height:16px">GLORI CREATIVITY SOLE CO., LTD.</div>'+
       '</div>'+
       '<div style="font-size:30px;font-weight:700;color:'+NAVY+';letter-spacing:1.8px;line-height:40px">'+TITLE+'</div>'+
     '</div>'+
