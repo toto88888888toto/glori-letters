@@ -1424,9 +1424,8 @@ function renderQI(){
 
   applyPreviewBg('qi-preview');
   previewEl.innerHTML=
-    /* ── PAGE BODY (flex:1 pushes footer to bottom) ── */
-    '<div style="flex:1;display:flex;flex-direction:column;font-family:Poppins,sans-serif;min-height:0">'+
-    '<div style="background:#fff;padding:12px 50px 0;flex-shrink:0">'+
+    /* ── HEADER SECTION (white bg) ── */
+    '<div style="background:#fff;padding:12px 50px 0;flex-shrink:0;font-family:Poppins,sans-serif">'+
 
     /* HEADER */
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-shrink:0">'+
@@ -1456,7 +1455,7 @@ function renderQI(){
     /* DIVIDER */
     '<div style="width:100%;height:1px;background:'+NAVY+';flex-shrink:0"></div>'+
     '</div>'+ /* end header-section */
-    '<div style="padding:8px 50px 10px;display:flex;flex-direction:column;flex:1;min-height:0">'+
+    '<div style="padding:8px 50px 0;flex-shrink:0;font-family:Poppins,sans-serif">'+
 
     /* TABLE */
     '<table style="width:100%;border-collapse:collapse;table-layout:fixed;flex-shrink:0">'+
@@ -1485,8 +1484,16 @@ function renderQI(){
       '<span style="font-size:14px;font-weight:700;color:#fff">'+mn(balance)+'</span>'+
     '</div>'+
 
-    /* BANK + TERMS — margin-top:auto pushes to bottom */
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px;margin-top:auto;padding-top:12px;flex-shrink:0">'+
+    '</div>'+ /* end body-top */
+
+    /* SPACER — absorbs free space, keeps the bottom block above the footer */
+    '<div style="flex:1 1 auto;min-height:16px"></div>'+
+
+    /* BOTTOM BLOCK (bank + terms + signatures) — flex-shrink:0 so it is never clipped */
+    '<div style="padding:0 50px 10px;flex-shrink:0;font-family:Poppins,sans-serif">'+
+
+    /* BANK + TERMS */
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 28px;flex-shrink:0">'+
       '<div>'+
         '<span style="'+SHD+'">BANK DETAILS</span>'+
         '<table style="border-collapse:collapse;margin-top:2px">'+bankRowsHTML+'</table>'+
@@ -1516,8 +1523,7 @@ function renderQI(){
       '</div>'+
     '</div>'+
 
-    '</div>'+ /* end content-section */
-    '</div>'+ /* end outer-wrapper */
+    '</div>'+ /* end bottom-block */
 
     /* FOOTER — flex sibling, sits at bottom naturally */
     '<div style="flex-shrink:0;height:28px;background:'+NAVY+';display:flex;align-items:center;justify-content:center">'+
